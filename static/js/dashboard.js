@@ -343,20 +343,59 @@ function populateRain(d) {
     set('rain-ari-desc', d.antecedent_rainfall_index.description);
 }
 
+function populateRecords(d) {
+    const a = d.all_time;
+    const day = d.daily;
+    const station = d.station;
+
+    set('rec-station-info',
+        `Recording since ${station.first_observation} · ` +
+        `${station.total_observations.toLocaleString()} observations · ` +
+        `${station.days_of_data} days of data`
+    );
+
+    set('rec-hottest', a.hottest.value);
+    set('rec-hottest-date', a.hottest.datetime);
+    set('rec-coldest', a.coldest.value);
+    set('rec-coldest-date', a.coldest.datetime);
+    set('rec-gust', a.strongest_gust.value);
+    set('rec-gust-date', a.strongest_gust.datetime);
+    set('rec-wind', a.highest_wind_avg.value);
+    set('rec-wind-date', a.highest_wind_avg.datetime);
+    set('rec-pressure-high', a.highest_pressure.value);
+    set('rec-pressure-high-date', a.highest_pressure.datetime);
+    set('rec-pressure-low', a.lowest_pressure.value);
+    set('rec-pressure-low-date', a.lowest_pressure.datetime);
+    set('rec-uv', a.highest_uv.value);
+    set('rec-uv-date', a.highest_uv.datetime);
+    set('rec-solar', a.highest_solar.value);
+    set('rec-solar-date', a.highest_solar.datetime);
+
+    set('rec-wettest-day', day.wettest_day.value);
+    set('rec-wettest-day-date', day.wettest_day.date);
+    set('rec-hottest-day', day.hottest_day.value);
+    set('rec-hottest-day-date', day.hottest_day.date);
+    set('rec-coldest-night', day.coldest_night.value);
+    set('rec-coldest-night-date', day.coldest_night.date);
+    set('rec-windiest-day', day.windiest_day.value);
+    set('rec-windiest-day-date', day.windiest_day.date);
+}
 
 // ── Fetch and refresh ──────────────────────────────────────────
 async function refresh() {
     try {
-        const [current, history, rain] = await Promise.all([
+        const [current, history, rain, records] = await Promise.all([
             fetch('/api/current').then(r => r.json()),
             fetch('/api/history/24h').then(r => r.json()),
             fetch('/api/rain/summary').then(r => r.json()),
+            fetch('/api/records').then(r => r.json()),
         ]);
-
+        
         populateCurrent(current);
         buildCharts(history);
         populateRain(rain);
-
+        populateRecords(records);
+        
         // Populate rain tab from current
         set('rain-rate', current.rain.current_rate.toFixed(1));
         set('rain-intensity', current.rain.intensity_description);

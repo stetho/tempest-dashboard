@@ -16,6 +16,15 @@ from analytics.solar import clear_sky_index, uv_dose_accumulator
 from analytics.temperature import absolute_humidity, frost_risk, thermal_comfort
 from analytics.rain import rain_intensity, spell_tracker, antecedent_rainfall_index
 from analytics.lightning import lightning_safety
+from analytics.records import get_all_time_records, get_daily_records, get_station_info
+
+from db import (
+    get_latest_observation,
+    get_observations_last_24h,
+    get_daily_totals,
+    get_pressure_last_3h,
+    DB_PATH,
+)
 
 app = Flask(__name__)
 
@@ -187,6 +196,14 @@ def build_current_conditions(obs: dict, pressure_obs: list[dict]) -> dict:
 def index():
     return render_template("index.html", station=STATION_NAME)
 
+@app.route("/api/records")
+def api_records():
+    db_path = DB_PATH
+    return jsonify({
+        "all_time": get_all_time_records(db_path),
+        "daily": get_daily_records(db_path),
+        "station": get_station_info(db_path),
+    })
 
 @app.route("/api/current")
 def api_current():

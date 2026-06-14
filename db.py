@@ -12,6 +12,8 @@ from pathlib import Path
 # Path to the logger's database
 DB_PATH = Path(os.getenv("DB_PATH", str(Path(__file__).parent.parent / "tempest-logger" / "data" / "tempest.db")))
 
+
+
 def get_connection():
     """Return a SQLite connection with row factory set to return dicts."""
     conn = sqlite3.connect(DB_PATH)

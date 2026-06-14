@@ -26,6 +26,7 @@
         <button class="tab-btn" data-tab="solar">Solar</button>
         <button class="tab-btn" data-tab="rain">Rain</button>
         <button class="tab-btn" data-tab="lightning">Lightning</button>
+        <button class="tab-btn" data-tab="records">Records</button>
     </nav>
 
     <main>
@@ -291,7 +292,98 @@
                 </div>
             </div>
         </section>
+<!-- RECORDS TAB -->
+<section class="tab-content" id="tab-records">
+    <div class="card-grid">
+        <div class="card card--wide">
+            <div class="card-label">Station</div>
+            <div class="card-value card-value--text" id="rec-station-info">—</div>
+        </div>
 
+        <div class="card">
+            <div class="card-label">Hottest Temperature</div>
+            <div class="card-value" id="rec-hottest">—</div>
+            <div class="card-unit">°C</div>
+            <div class="card-sub" id="rec-hottest-date">—</div>
+        </div>
+
+        <div class="card">
+            <div class="card-label">Coldest Temperature</div>
+            <div class="card-value" id="rec-coldest">—</div>
+            <div class="card-unit">°C</div>
+            <div class="card-sub" id="rec-coldest-date">—</div>
+        </div>
+
+        <div class="card">
+            <div class="card-label">Strongest Gust</div>
+            <div class="card-value" id="rec-gust">—</div>
+            <div class="card-unit">mph</div>
+            <div class="card-sub" id="rec-gust-date">—</div>
+        </div>
+
+        <div class="card">
+            <div class="card-label">Highest Wind</div>
+            <div class="card-value" id="rec-wind">—</div>
+            <div class="card-unit">mph</div>
+            <div class="card-sub" id="rec-wind-date">—</div>
+        </div>
+
+        <div class="card">
+            <div class="card-label">Highest Pressure</div>
+            <div class="card-value" id="rec-pressure-high">—</div>
+            <div class="card-unit">mb</div>
+            <div class="card-sub" id="rec-pressure-high-date">—</div>
+        </div>
+
+        <div class="card">
+            <div class="card-label">Lowest Pressure</div>
+            <div class="card-value" id="rec-pressure-low">—</div>
+            <div class="card-unit">mb</div>
+            <div class="card-sub" id="rec-pressure-low-date">—</div>
+        </div>
+
+        <div class="card">
+            <div class="card-label">Highest UV Index</div>
+            <div class="card-value" id="rec-uv">—</div>
+            <div class="card-sub" id="rec-uv-date">—</div>
+        </div>
+
+        <div class="card">
+            <div class="card-label">Highest Solar</div>
+            <div class="card-value" id="rec-solar">—</div>
+            <div class="card-unit">W/m²</div>
+            <div class="card-sub" id="rec-solar-date">—</div>
+        </div>
+
+        <div class="card">
+            <div class="card-label">Wettest Day</div>
+            <div class="card-value" id="rec-wettest-day">—</div>
+            <div class="card-unit">mm</div>
+            <div class="card-sub" id="rec-wettest-day-date">—</div>
+        </div>
+
+        <div class="card">
+            <div class="card-label">Hottest Day</div>
+            <div class="card-value" id="rec-hottest-day">—</div>
+            <div class="card-unit">°C</div>
+            <div class="card-sub" id="rec-hottest-day-date">—</div>
+        </div>
+
+        <div class="card">
+            <div class="card-label">Coldest Night</div>
+            <div class="card-value" id="rec-coldest-night">—</div>
+            <div class="card-unit">°C</div>
+            <div class="card-sub" id="rec-coldest-night-date">—</div>
+        </div>
+
+        <div class="card">
+            <div class="card-label">Windiest Day</div>
+            <div class="card-value" id="rec-windiest-day">—</div>
+            <div class="card-unit">mph</div>
+            <div class="card-sub" id="rec-windiest-day-date">—</div>
+        </div>
+    </div>
+</section>
     </main>
 
     <script src="/static/js/dashboard.js"></script>
