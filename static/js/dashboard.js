@@ -1,0 +1,373 @@
+// ── Tab switching ──────────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(s => s.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
+    });
+});
+
+
+// ── Helpers ───────────────────────────────────────────────────
+function set(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+}
+
+function setClass(id, className) {
+    const el = document.getElementById(id);
+    if (el) el.className = el.className.replace(/risk-\S+/g, '').trim() + ` ${className}`;
+}
+
+function riskClass(level) {
+    return `risk-${level.toLowerCase().replace(' ', '-')}`;
+}
+
+function formatTimestamp(ts) {
+    const d = new Date(ts * 1000);
+    return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+}
+
+function trendClass(trend) {
+    return `trend-${trend.toLowerCase()}`;
+}
+
+function uvRisk(uv) {
+    if (uv >= 11) return 'Extreme';
+    if (uv >= 8)  return 'Very High';
+    if (uv >= 6)  return 'High';
+    if (uv >= 3)  return 'Moderate';
+    return 'Low';
+}
+
+
+// ── Populate current conditions ────────────────────────────────
+function populateCurrent(d) {
+    // Header
+    set('last-updated', formatTimestamp(d.timestamp));
+
+    // Current tab
+    set('cur-temp', d.temperature.air);
+    set('cur-feels-like', `Feels like ${d.temperature.feels_like}°C`);
+    set('cur-humidity', d.humidity.relative);
+    set('cur-humidity-desc', d.temperature.humidity_description);
+    set('cur-wind', d.wind.avg);
+    set('cur-wind-desc', `${d.wind.direction_abbr} · Force ${d.wind.beaufort_force} · ${d.wind.beaufort_description}`);
+    set('cur-pressure', d.pressure.sea_level);
+
+    const trendEl = document.getElementById('cur-pressure-trend');
+    if (trendEl) {
+        trendEl.textContent = d.pressure.trend.charAt(0).toUpperCase() + d.pressure.trend.slice(1);
+        trendEl.className = `card-sub ${trendClass(d.pressure.trend)}`;
+    }
+
+    set('cur-uv', d.solar.uv);
+    set('cur-sky', d.solar.sky_description);
+    set('cur-rain', d.rain.today_total.toFixed(1));
+    set('cur-rain-intensity', d.rain.intensity_description);
+    set('cur-forecast', d.pressure.zambretti_forecast);
+    set('cur-comfort', d.temperature.comfort_category);
+
+    // Lightning card
+    const lightCard = document.getElementById('lightning-card');
+    set('cur-lightning', `${d.lightning.last_distance} miles · ${d.lightning.risk_level} risk`);
+    set('cur-lightning-advice', d.lightning.advice);
+    if (d.lightning.risk_level === 'High' || d.lightning.risk_level === 'Extreme') {
+        lightCard.classList.add('card--danger');
+    } else {
+        lightCard.classList.remove('card--danger');
+    }
+
+    // Temperature tab
+    set('temp-air', d.temperature.air);
+    set('temp-feels', d.temperature.feels_like);
+    set('temp-dew', d.temperature.dew_point);
+    set('temp-wetbulb', d.temperature.wet_bulb);
+    set('temp-abshum', d.temperature.absolute_humidity);
+    set('temp-abshum-desc', d.temperature.humidity_description);
+    set('temp-comfort', d.temperature.comfort_temp);
+    set('temp-comfort-cat', d.temperature.comfort_category);
+
+    // Frost risk
+    const frostCard = document.getElementById('frost-card');
+    set('temp-frost', d.frost.description);
+    set('temp-frost-factors', d.frost.factors.join(' · ') || 'No contributing factors');
+    frostCard.className = 'card card--wide';
+    if (d.frost.risk_level === 'High') frostCard.classList.add('card--danger');
+
+    // Wind tab
+    set('wind-avg', d.wind.avg);
+    set('wind-gust', d.wind.gust);
+    set('wind-lull', d.wind.lull);
+    set('wind-dir', d.wind.direction_abbr);
+    set('wind-dir-full', `${d.wind.direction_degrees}° · ${d.wind.direction_compass}`);
+    set('wind-beaufort', `Force ${d.wind.beaufort_force}`);
+    set('wind-beaufort-desc', d.wind.beaufort_description);
+    set('wind-gust-factor', d.wind.gust_factor ?? '—');
+    set('wind-turbulence', d.wind.turbulent ? 'Turbulent conditions' : 'Steady conditions');
+
+    // Pressure tab
+    set('pres-sea', d.pressure.sea_level);
+    set('pres-station', d.pressure.station);
+
+    const presTrendEl = document.getElementById('pres-trend');
+    if (presTrendEl) {
+        presTrendEl.textContent = d.pressure.trend.charAt(0).toUpperCase() + d.pressure.trend.slice(1);
+        presTrendEl.className = `card-value card-value--text ${trendClass(d.pressure.trend)}`;
+    }
+
+    set('pres-rate', d.pressure.change_rate);
+    set('pres-zambretti', d.pressure.zambretti_forecast);
+    set('pres-zambretti-letter', `Zambretti ${d.pressure.zambretti_letter}`);
+
+    // Solar tab
+    set('sol-radiation', d.solar.radiation);
+    set('sol-uv', d.solar.uv);
+    set('sol-uv-risk', `${uvRisk(d.solar.uv)} risk`);
+    set('sol-brightness', d.solar.brightness.toLocaleString());
+    set('sol-sky', d.solar.sky_description);
+    set('sol-csi', `Clear sky index: ${d.solar.clear_sky_index ?? '—'}`);
+
+    // Lightning tab
+    const riskCard = document.getElementById('lightning-risk-card');
+    set('light-risk', d.lightning.risk_level);
+    set('light-distance', d.lightning.last_distance);
+    set('light-count', d.lightning.count);
+    set('light-advice', d.lightning.advice);
+    riskCard.className = `card card--large`;
+    if (d.lightning.risk_level === 'High' || d.lightning.risk_level === 'Extreme') {
+        riskCard.classList.add('card--danger');
+    }
+}
+
+
+// ── Charts ────────────────────────────────────────────────────
+const chartDefaults = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+        legend: {
+            labels: { color: '#94a3b8', font: { size: 11 } }
+        }
+    },
+    scales: {
+        x: {
+            ticks: { color: '#64748b', maxTicksLimit: 8, font: { size: 10 } },
+            grid:  { color: '#2a2d3e' }
+        },
+        y: {
+            ticks: { color: '#64748b', font: { size: 10 } },
+            grid:  { color: '#2a2d3e' }
+        }
+    }
+};
+
+let charts = {};
+
+function buildCharts(history) {
+    const labels = history.map(o =>
+        new Date(o.timestamp * 1000).toLocaleTimeString('en-GB', {
+            hour: '2-digit', minute: '2-digit'
+        })
+    );
+
+    // Destroy existing charts before rebuilding
+    Object.values(charts).forEach(c => c.destroy());
+    charts = {};
+
+    // Temperature chart
+    charts.temperature = new Chart(
+        document.getElementById('chart-temperature'),
+        {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [
+                    {
+                        label: 'Air Temp (°C)',
+                        data: history.map(o => o.air_temperature),
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'rgba(245,158,11,0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 0,
+                    },
+                    {
+                        label: 'Humidity (%)',
+                        data: history.map(o => o.relative_humidity),
+                        borderColor: '#4f9cf9',
+                        backgroundColor: 'rgba(79,156,249,0.05)',
+                        fill: false,
+                        tension: 0.4,
+                        pointRadius: 0,
+                        yAxisID: 'y1',
+                    }
+                ]
+            },
+            options: {
+                ...chartDefaults,
+                scales: {
+                    ...chartDefaults.scales,
+                    y:  { ...chartDefaults.scales.y, title: { display: true, text: '°C', color: '#64748b' } },
+                    y1: {
+                        position: 'right',
+                        ticks: { color: '#64748b', font: { size: 10 } },
+                        grid: { drawOnChartArea: false },
+                        title: { display: true, text: '%', color: '#64748b' }
+                    }
+                }
+            }
+        }
+    );
+
+    // Wind chart
+    charts.wind = new Chart(
+        document.getElementById('chart-wind'),
+        {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [
+                    {
+                        label: 'Gust (mph)',
+                        data: history.map(o => o.wind_gust),
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239,68,68,0.1)',
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 0,
+                    },
+                    {
+                        label: 'Avg (mph)',
+                        data: history.map(o => o.wind_avg),
+                        borderColor: '#4f9cf9',
+                        backgroundColor: 'rgba(79,156,249,0.1)',
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 0,
+                    }
+                ]
+            },
+            options: {
+                ...chartDefaults,
+                scales: {
+                    ...chartDefaults.scales,
+                    y: { ...chartDefaults.scales.y, title: { display: true, text: 'mph', color: '#64748b' } }
+                }
+            }
+        }
+    );
+
+    // Pressure chart
+    charts.pressure = new Chart(
+        document.getElementById('chart-pressure'),
+        {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [
+                    {
+                        label: 'Sea Level Pressure (mb)',
+                        data: history.map(o => o.sea_level_pressure),
+                        borderColor: '#a78bfa',
+                        backgroundColor: 'rgba(167,139,250,0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 0,
+                    }
+                ]
+            },
+            options: {
+                ...chartDefaults,
+                scales: {
+                    ...chartDefaults.scales,
+                    y: { ...chartDefaults.scales.y, title: { display: true, text: 'mb', color: '#64748b' } }
+                }
+            }
+        }
+    );
+
+    // Solar chart
+    charts.solar = new Chart(
+        document.getElementById('chart-solar'),
+        {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [
+                    {
+                        label: 'Solar Radiation (W/m²)',
+                        data: history.map(o => o.solar_radiation),
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'rgba(245,158,11,0.15)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 0,
+                    },
+                    {
+                        label: 'UV Index',
+                        data: history.map(o => o.uv),
+                        borderColor: '#f43f5e',
+                        fill: false,
+                        tension: 0.4,
+                        pointRadius: 0,
+                        yAxisID: 'y1',
+                    }
+                ]
+            },
+            options: {
+                ...chartDefaults,
+                scales: {
+                    ...chartDefaults.scales,
+                    y:  { ...chartDefaults.scales.y, title: { display: true, text: 'W/m²', color: '#64748b' } },
+                    y1: {
+                        position: 'right',
+                        ticks: { color: '#64748b', font: { size: 10 } },
+                        grid: { drawOnChartArea: false },
+                        title: { display: true, text: 'UV', color: '#64748b' }
+                    }
+                }
+            }
+        }
+    );
+}
+
+
+// ── Rain summary ───────────────────────────────────────────────
+function populateRain(d) {
+    set('rain-spell',
+        `${d.spell.current_spell_days} day ${d.spell.current_spell} spell`
+    );
+    set('rain-ari', d.antecedent_rainfall_index.saturation_risk);
+    set('rain-ari-desc', d.antecedent_rainfall_index.description);
+}
+
+
+// ── Fetch and refresh ──────────────────────────────────────────
+async function refresh() {
+    try {
+        const [current, history, rain] = await Promise.all([
+            fetch('/api/current').then(r => r.json()),
+            fetch('/api/history/24h').then(r => r.json()),
+            fetch('/api/rain/summary').then(r => r.json()),
+        ]);
+
+        populateCurrent(current);
+        buildCharts(history);
+        populateRain(rain);
+
+        // Populate rain tab from current
+        set('rain-rate', current.rain.current_rate.toFixed(1));
+        set('rain-intensity', current.rain.intensity_description);
+        set('rain-today', current.rain.today_total.toFixed(1));
+        set('rain-yesterday', current.rain.yesterday_total.toFixed(3));
+
+    } catch (err) {
+        console.error('Failed to fetch data:', err);
+    }
+}
+
+// Initial load then refresh every 5 minutes
+refresh();
+setInterval(refresh, 5 * 60 * 1000);

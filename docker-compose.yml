@@ -1,0 +1,10 @@
+services:
+  tempest-dashboard:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    volumes:
+      - /data/tempest-logger/data:/data
+    environment:
+      - DB_PATH=/data/tempest.db

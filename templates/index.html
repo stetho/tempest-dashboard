@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ station }} Weather Station</title>
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+    <header>
+        <div class="header-left">
+            <h1>{{ station }}</h1>
+            <span class="subtitle">Personal Weather Station</span>
+        </div>
+        <div class="header-right">
+            <span class="last-updated">Last updated: <span id="last-updated">—</span></span>
+        </div>
+    </header>
+
+    <nav class="tabs">
+        <button class="tab-btn active" data-tab="current">Current</button>
+        <button class="tab-btn" data-tab="temperature">Temperature</button>
+        <button class="tab-btn" data-tab="wind">Wind</button>
+        <button class="tab-btn" data-tab="pressure">Pressure</button>
+        <button class="tab-btn" data-tab="solar">Solar</button>
+        <button class="tab-btn" data-tab="rain">Rain</button>
+        <button class="tab-btn" data-tab="lightning">Lightning</button>
+    </nav>
+
+    <main>
+
+        <!-- CURRENT TAB -->
+        <section class="tab-content active" id="tab-current">
+            <div class="card-grid">
+
+                <div class="card card--large">
+                    <div class="card-label">Temperature</div>
+                    <div class="card-value" id="cur-temp">—</div>
+                    <div class="card-unit">°C</div>
+                    <div class="card-sub" id="cur-feels-like">Feels like —</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-label">Humidity</div>
+                    <div class="card-value" id="cur-humidity">—</div>
+                    <div class="card-unit">%</div>
+                    <div class="card-sub" id="cur-humidity-desc">—</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-label">Wind</div>
+                    <div class="card-value" id="cur-wind">—</div>
+                    <div class="card-unit">mph</div>
+                    <div class="card-sub" id="cur-wind-desc">—</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-label">Pressure</div>
+                    <div class="card-value" id="cur-pressure">—</div>
+                    <div class="card-unit">mb</div>
+                    <div class="card-sub" id="cur-pressure-trend">—</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-label">UV Index</div>
+                    <div class="card-value" id="cur-uv">—</div>
+                    <div class="card-sub" id="cur-sky">—</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-label">Rain Today</div>
+                    <div class="card-value" id="cur-rain">—</div>
+                    <div class="card-unit">mm</div>
+                    <div class="card-sub" id="cur-rain-intensity">—</div>
+                </div>
+
+                <div class="card card--wide">
+                    <div class="card-label">Forecast</div>
+                    <div class="card-value card-value--text" id="cur-forecast">—</div>
+                    <div class="card-sub" id="cur-comfort">—</div>
+                </div>
+
+                <div class="card card--wide" id="lightning-card">
+                    <div class="card-label">Lightning</div>
+                    <div class="card-value card-value--text" id="cur-lightning">—</div>
+                    <div class="card-sub" id="cur-lightning-advice">—</div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- TEMPERATURE TAB -->
+        <section class="tab-content" id="tab-temperature">
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-label">Air Temperature</div>
+                    <div class="card-value" id="temp-air">—</div>
+                    <div class="card-unit">°C</div>
+                </div>
+                <div class="card">
+                    <div class="card-label">Feels Like</div>
+                    <div class="card-value" id="temp-feels">—</div>
+                    <div class="card-unit">°C</div>
+                </div>
+                <div class="card">
+                    <div class="card-label">Dew Point</div>
+                    <div class="card-value" id="temp-dew">—</div>
+                    <div class="card-unit">°C</div>
+                </div>
+                <div class="card">
+                    <div class="card-label">Wet Bulb</div>
+                    <div class="card-value" id="temp-wetbulb">—</div>
+                    <div class="card-unit">°C</div>
+                </div>
+                <div class="card">
+                    <div class="card-label">Absolute Humidity</div>
+                    <div class="card-value" id="temp-abshum">—</div>
+                    <div class="card-unit">g/m³</div>
+                    <div class="card-sub" id="temp-abshum-desc">—</div>
+                </div>
+                <div class="card">
+                    <div class="card-label">Thermal Comfort</div>
+                    <div class="card-value" id="temp-comfort">—</div>
+                    <div class="card-unit">°C</div>
+                    <div class="card-sub" id="temp-comfort-cat">—</div>
+                </div>
+                <div class="card card--wide" id="frost-card">
+                    <div class="card-label">Frost Risk</div>
+                    <div class="card-value card-value--text" id="temp-frost">—</div>
+                    <div class="card-sub" id="temp-frost-factors">—</div>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="chart-temperature"></canvas>
+            </div>
+        </section>
+
+        <!-- WIND TAB -->
+        <section class="tab-content" id="tab-wind">
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-label">Average</div>
+                    <div class="card-value" id="wind-avg">—</div>
+                    <div class="card-unit">mph</div>
+                </div>
+                <div class="card">
+                    <div class="card-label">Gust</div>
+                    <div class="card-value" id="wind-gust">—</div>
+                    <div class="card-unit">mph</div>
+                </div>
+                <div class="card">
+                    <div class="card-label">Lull</div>
+                    <div class="card-value" id="wind-lull">—</div>
+                    <div class="card-unit">mph</div>
+                </div>
+                <div class="card">
+                    <div class="card-label">Direction</div>
+                    <div class="card-value" id="wind-dir">—</div>
+                    <div class="card-sub" id="wind-dir-full">—</div>
+                </div>
+                <div class="card">
+                    <div class="card-label">Beaufort</div>
+                    <div class="card-value" id="wind-beaufort">—</div>
+                    <div class="card-sub" id="wind-beaufort-desc">—</div>
+                </div>
+                <div class="card">
+                    <div class="card-label">Gust Factor</div>
+                    <div class="card-value" id="wind-gust-factor">—</div>
+                    <div class="card-sub" id="wind-turbulence">—</div>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="chart-wind"></canvas>
+            </div>
+        </section>
+
+        <!-- PRESSURE TAB -->
+        <section class="tab-content" id="tab-pressure">
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-label">Sea Level Pressure</div>
+                    <div class="card-value" id="pres-sea">—</div>
+                    <div class="card-unit">mb</div>
+                </div>
+                <div class="card">
+                    <div class="card-label">Station Pressure</div>
+                    <div class="card-value" id="pres-station">—</div>
+                    <div class="card-unit">mb</div>
+                </div>
+                <div class="card">
+                    <div class="card-label">Trend</div>
+                    <div class="card-value card-value--text" id="pres-trend">—</div>
+                </div>
+                <div class="card">
+                    <div class="card-label">Change Rate</div>
+                    <div class="card-value" id="pres-rate">—</div>
+                    <div class="card-unit">mb/hr</div>
+                </div>
+                <div class="card card--wide">
+                    <div class="card-label">Zambretti Forecast</div>
+                    <div class="card-value card-value--text" id="pres-zambretti">—</div>
+                    <div class="card-sub" id="pres-zambretti-letter">—</div>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="chart-pressure"></canvas>
+            </div>
+        </section>
+
+        <!-- SOLAR TAB -->
+        <section class="tab-content" id="tab-solar">
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-label">Solar Radiation</div>
+                    <div class="card-value" id="sol-radiation">—</div>
+                    <div class="card-unit">W/m²</div>
+                </div>
+                <div class="card">
+                    <div class="card-label">UV Index</div>
+                    <div class="card-value" id="sol-uv">—</div>
+                    <div class="card-sub" id="sol-uv-risk">—</div>
+                </div>
+                <div class="card">
+                    <div class="card-label">Brightness</div>
+                    <div class="card-value" id="sol-brightness">—</div>
+                    <div class="card-unit">lux</div>
+                </div>
+                <div class="card card--wide">
+                    <div class="card-label">Sky Conditions</div>
+                    <div class="card-value card-value--text" id="sol-sky">—</div>
+                    <div class="card-sub" id="sol-csi">Clear sky index: —</div>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="chart-solar"></canvas>
+            </div>
+        </section>
+
+        <!-- RAIN TAB -->
+        <section class="tab-content" id="tab-rain">
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-label">Current Rate</div>
+                    <div class="card-value" id="rain-rate">—</div>
+                    <div class="card-unit">mm/hr</div>
+                    <div class="card-sub" id="rain-intensity">—</div>
+                </div>
+                <div class="card">
+                    <div class="card-label">Today</div>
+                    <div class="card-value" id="rain-today">—</div>
+                    <div class="card-unit">mm</div>
+                </div>
+                <div class="card">
+                    <div class="card-label">Yesterday</div>
+                    <div class="card-value" id="rain-yesterday">—</div>
+                    <div class="card-unit">mm</div>
+                </div>
+                <div class="card">
+                    <div class="card-label">Current Spell</div>
+                    <div class="card-value card-value--text" id="rain-spell">—</div>
+                </div>
+                <div class="card">
+                    <div class="card-label">Ground Saturation</div>
+                    <div class="card-value card-value--text" id="rain-ari">—</div>
+                    <div class="card-sub" id="rain-ari-desc">—</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- LIGHTNING TAB -->
+        <section class="tab-content" id="tab-lightning">
+            <div class="card-grid">
+                <div class="card card--large" id="lightning-risk-card">
+                    <div class="card-label">Risk Level</div>
+                    <div class="card-value card-value--text" id="light-risk">—</div>
+                </div>
+                <div class="card">
+                    <div class="card-label">Last Strike</div>
+                    <div class="card-value" id="light-distance">—</div>
+                    <div class="card-unit">miles</div>
+                </div>
+                <div class="card">
+                    <div class="card-label">Strike Count</div>
+                    <div class="card-value" id="light-count">—</div>
+                    <div class="card-sub">last observation</div>
+                </div>
+                <div class="card card--wide">
+                    <div class="card-label">Safety Advice</div>
+                    <div class="card-value card-value--text" id="light-advice">—</div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script src="/static/js/dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,233 @@
+/* ── Reset & Base ── */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --bg:           #0f1117;
+    --bg-card:      #1a1d27;
+    --bg-card-hover:#1f2335;
+    --border:       #2a2d3e;
+    --accent:       #4f9cf9;
+    --accent-dim:   #2d5a9e;
+    --text:         #e2e8f0;
+    --text-muted:   #64748b;
+    --text-sub:     #94a3b8;
+    --success:      #22c55e;
+    --warning:      #f59e0b;
+    --danger:       #ef4444;
+    --danger-dim:   #7f1d1d;
+
+    --radius:       12px;
+    --radius-sm:    8px;
+    --font:         -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    min-height: 100vh;
+    padding-bottom: 2rem;
+}
+
+/* ── Header ── */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 2rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-card);
+}
+
+header h1 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.02em;
+}
+
+.subtitle {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 0.1rem;
+}
+
+.last-updated {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+/* ── Tabs ── */
+.tabs {
+    display: flex;
+    gap: 0.25rem;
+    padding: 1rem 2rem 0;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+}
+
+.tab-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    font-family: var(--font);
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+    white-space: nowrap;
+}
+
+.tab-btn:hover {
+    color: var(--text);
+}
+
+.tab-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+}
+
+/* ── Tab Content ── */
+.tab-content {
+    display: none;
+    padding: 1.5rem 2rem;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* ── Card Grid ── */
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+/* ── Cards ── */
+.card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    transition: background 0.15s;
+}
+
+.card:hover {
+    background: var(--bg-card-hover);
+}
+
+.card--large {
+    grid-column: span 2;
+}
+
+.card--wide {
+    grid-column: span 2;
+}
+
+.card-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+}
+
+.card-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--text);
+    letter-spacing: -0.03em;
+}
+
+.card--large .card-value {
+    font-size: 3.5rem;
+}
+
+.card-value--text {
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+}
+
+.card-unit {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 0.2rem;
+}
+
+.card-sub {
+    font-size: 0.8rem;
+    color: var(--text-sub);
+    margin-top: 0.5rem;
+    line-height: 1.4;
+}
+
+/* ── Risk colour overrides ── */
+.risk-none, .risk-very-low {
+    color: var(--success);
+}
+
+.risk-low {
+    color: var(--success);
+}
+
+.risk-moderate {
+    color: var(--warning);
+}
+
+.risk-high, .risk-extreme {
+    color: var(--danger);
+}
+
+.card--danger {
+    border-color: var(--danger);
+    background: var(--danger-dim);
+}
+
+/* ── Trend arrows ── */
+.trend-rising::before  { content: "↑ "; color: var(--success); }
+.trend-falling::before { content: "↓ "; color: var(--danger); }
+.trend-steady::before  { content: "→ "; color: var(--text-muted); }
+
+/* ── Charts ── */
+.chart-container {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    height: 300px;
+    position: relative;
+}
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+    header {
+        padding: 1rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .tabs {
+        padding: 0.75rem 1rem 0;
+    }
+
+    .tab-content {
+        padding: 1rem;
+    }
+
+    .card--large,
+    .card--wide {
+        grid-column: span 1;
+    }
+}
