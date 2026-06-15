@@ -401,6 +401,13 @@ async function refresh() {
         set('rain-intensity', current.rain.intensity_description);
         set('rain-today', current.rain.today_total.toFixed(1));
         set('rain-yesterday', current.rain.yesterday_total.toFixed(3));
+        
+        // Refresh camera image
+        const cameraImg = document.getElementById('camera-image');
+        if (cameraImg) {
+            cameraImg.src = `/camera/latest?t=${Date.now()}`;
+            set('camera-updated', new Date().toLocaleTimeString('en-GB'));
+        }
 
     } catch (err) {
         console.error('Failed to fetch data:', err);

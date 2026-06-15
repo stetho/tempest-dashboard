@@ -6,5 +6,7 @@ services:
       - "5001:5000"
     volumes:
       - /data/tempest-logger/data:/data
+      - /data/tempest-camera/output:/camera
     environment:
       - DB_PATH=/data/tempest.db
+      - CAMERA_PATH=/camera/latest.jpg

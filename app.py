@@ -1,9 +1,9 @@
 """
 app.py — Flask dashboard for the Tempest weather station.
 """
-
+import os
 import datetime
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, send_file
 from db import (
     get_latest_observation,
     get_observations_last_24h,
@@ -31,6 +31,7 @@ app = Flask(__name__)
 LATITUDE = 51.38909
 LONGITUDE = -0.08738
 STATION_NAME = "Selhurst"
+CAMERA_PATH = os.getenv("CAMERA_PATH", "/camera/latest.jpg")
 
 def get_utc_offset(timestamp: int) -> float:
     """
@@ -195,6 +196,13 @@ def build_current_conditions(obs: dict, pressure_obs: list[dict]) -> dict:
 @app.route("/")
 def index():
     return render_template("index.html", station=STATION_NAME)
+
+@app.route("/camera/latest")
+def camera_latest():
+    path = Path(CAMERA_PATH)
+    if not path.exists():
+        return jsonify({"error": "No camera image available"}), 404
+    return send_file(str(path), mimetype="image/jpeg")
 
 @app.route("/api/records")
 def api_records():
