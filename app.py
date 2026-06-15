@@ -2,6 +2,7 @@
 app.py — Flask dashboard for the Tempest weather station.
 """
 import os
+import glob
 import datetime
 from flask import Flask, render_template, jsonify, send_file
 from pathlib import Path
@@ -33,6 +34,7 @@ LATITUDE = 51.38909
 LONGITUDE = -0.08738
 STATION_NAME = "Selhurst"
 CAMERA_PATH = os.getenv("CAMERA_PATH", "/camera/latest.jpg")
+TIMELAPSE_DIR = Path(os.getenv("CAMERA_PATH", "/camera/latest.jpg")).parent / "timelapse"
 
 def get_utc_offset(timestamp: int) -> float:
     """
@@ -204,6 +206,26 @@ def camera_latest():
     if not path.exists():
         return jsonify({"error": "No camera image available"}), 404
     return send_file(str(path), mimetype="image/jpeg")
+
+@app.route("/camera/timelapse")
+def camera_timelapse_list():
+    """Return a list of available timelapse videos."""
+    if not TIMELAPSE_DIR.exists():
+        return jsonify([])
+    videos = sorted([
+        f.stem for f in TIMELAPSE_DIR.iterdir()
+        if f.suffix == ".mp4"
+    ], reverse=True)
+    return jsonify(videos)
+
+
+@app.route("/camera/timelapse/<date>")
+def camera_timelapse_video(date: str):
+    """Serve a timelapse video by date (YYYYMMDD)."""
+    video_path = TIMELAPSE_DIR / f"{date}.mp4"
+    if not video_path.exists():
+        return jsonify({"error": "Video not found"}), 404
+    return send_file(str(video_path), mimetype="video/mp4")
 
 @app.route("/api/records")
 def api_records():

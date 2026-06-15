@@ -41,6 +41,55 @@ function uvRisk(uv) {
     return 'Low';
 }
 
+// ── Timelapse ─────────────────────────────────────────────────
+async function loadTimelapse() {
+    try {
+        const videos = await fetch('/camera/timelapse').then(r => r.json());
+        const select = document.getElementById('timelapse-select');
+        const empty = document.getElementById('timelapse-empty');
+        const video = document.getElementById('timelapse-video');
+
+        if (videos.length === 0) {
+            empty.style.display = 'block';
+            select.style.display = 'none';
+            return;
+        }
+
+        empty.style.display = 'none';
+        select.style.display = 'block';
+
+        // Populate dropdown
+        videos.forEach(date => {
+            const option = document.createElement('option');
+            option.value = date;
+            // Format YYYYMMDD as readable date
+            const d = `${date.slice(0,4)}-${date.slice(4,6)}-${date.slice(6,8)}`;
+            option.textContent = new Date(d).toLocaleDateString('en-GB', {
+                weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+            });
+            select.appendChild(option);
+        });
+
+        // Auto-select most recent
+        select.value = videos[0];
+        video.src = `/camera/timelapse/${videos[0]}`;
+        video.style.display = 'block';
+
+        // Handle selection change
+        select.addEventListener('change', () => {
+            if (select.value) {
+                video.src = `/camera/timelapse/${select.value}`;
+                video.style.display = 'block';
+            }
+        });
+
+    } catch (err) {
+        console.error('Failed to load timelapse:', err);
+    }
+}
+
+// Call once on page load
+loadTimelapse();
 
 // ── Populate current conditions ────────────────────────────────
 function populateCurrent(d) {
