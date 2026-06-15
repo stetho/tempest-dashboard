@@ -124,7 +124,7 @@ The dashboard exposes a simple JSON API:
 | 1 | `tempest-logger` | Data collection service | ✅ Complete |
 | 2 | `tempest-analytics` | Derived calculations library | ✅ Complete |
 | 3 | `tempest-dashboard` | Web visualisation | ✅ Complete |
-| 4 | — | Camera integration | 📋 Planned |
+| 4 | `tempest-camera` | Camera integration | ✅ Complete |
 | 5 | `tempest-alerts` | Threshold alerting service (Go) | 📋 Planned |
 
 ## License
