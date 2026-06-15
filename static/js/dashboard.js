@@ -382,6 +382,19 @@ function buildCharts(history) {
     );
 }
 
+function populateStorm(d) {
+    if (d.error) return;
+    
+    const card = document.getElementById('storm-card');
+    set('storm-probability', `${d.probability}% — ${d.category}`);
+    set('storm-description', d.description);
+    set('storm-advice', d.advice);
+    
+    card.className = 'card card--wide';
+    if (d.probability >= 75) {
+        card.classList.add('card--danger');
+    }
+}
 
 // ── Rain summary ───────────────────────────────────────────────
 function populateRain(d) {
@@ -439,6 +452,19 @@ async function refresh() {
             fetch('/api/rain/summary').then(r => r.json()),
             fetch('/api/records').then(r => r.json()),
         ]);
+        const [current, history, rain, records, storm] = await Promise.all([
+            fetch('/api/current').then(r => r.json()),
+            fetch('/api/history/24h').then(r => r.json()),
+            fetch('/api/rain/summary').then(r => r.json()),
+            fetch('/api/records').then(r => r.json()),
+            fetch('/api/storm').then(r => r.json()),
+        ]);
+
+populateCurrent(current);
+buildCharts(history);
+populateRain(rain);
+populateRecords(records);
+        populateStorm(storm);
         
         populateCurrent(current);
         buildCharts(history);

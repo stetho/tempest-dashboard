@@ -12,7 +12,7 @@ from db import (
     get_daily_totals,
     get_pressure_last_3h,
 )
-from analytics.pressure import pressure_change_rate, zambretti_forecast
+from analytics.pressure import pressure_change_rate, zambretti_forecast, storm_predictor
 from analytics.wind import beaufort_scale, gust_factor, wind_direction_compass
 from analytics.solar import clear_sky_index, uv_dose_accumulator
 from analytics.temperature import absolute_humidity, frost_risk, thermal_comfort
@@ -199,6 +199,14 @@ def build_current_conditions(obs: dict, pressure_obs: list[dict]) -> dict:
 @app.route("/")
 def index():
     return render_template("index.html", station=STATION_NAME)
+
+@app.route("/api/storm")
+def api_storm():
+    obs = get_pressure_last_3h()
+    if len(obs) < 2:
+        return jsonify({"error": "Not enough data"}), 404
+    result = storm_predictor(obs)
+    return jsonify(result)
 
 @app.route("/camera/latest")
 def camera_latest():
