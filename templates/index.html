@@ -31,12 +31,41 @@
     </nav>
 
 <!-- CAMERA TAB -->
-    <section class="tab-content" id="tab-camera">
-        <div class="camera-container">
-            <img id="camera-image" src="/camera/latest" alt="Live camera feed" />
-            <div class="camera-timestamp">Updated every 10 minutes · <span id="camera-updated">—</span></div>
+
+
+<section class="tab-content" id="tab-camera">
+    <div class="camera-container">
+        <img id="camera-image" src="/camera/latest" alt="Live camera feed" />
+        <div class="camera-timestamp">Updated every 10 minutes · <span id="camera-updated">—</span></div>
+    </div>
+
+    <div class="card card--wide" style="margin-top: 1rem;">
+        <div class="card-label">Daily Timelapse</div>
+        <div id="timelapse-container">
+            <select id="timelapse-select" style="
+                background: var(--bg);
+                color: var(--text);
+                border: 1px solid var(--border);
+                border-radius: var(--radius-sm);
+                padding: 0.4rem 0.75rem;
+                font-size: 0.875rem;
+                margin-bottom: 1rem;
+            ">
+                <option value="">Select a date...</option>
+            </select>
+            <video id="timelapse-video" controls style="width: 100%; display: none; border-radius: var(--radius-sm);">
+                Your browser does not support video playback.
+            </video>
+            <div id="timelapse-empty" style="color: var(--text-muted); font-size: 0.875rem;">
+                No timelapse videos available yet — check back tomorrow.
+            </div>
         </div>
-    </section>
+    </div>
+</section>
+
+
+
+
 
     <main>
 
@@ -396,36 +425,6 @@
             <div class="card-value" id="rec-windiest-day">—</div>
             <div class="card-unit">mph</div>
             <div class="card-sub" id="rec-windiest-day-date">—</div>
-        </div>
-    </div>
-</section>
-<!-- CAMERA TAB -->
-<section class="tab-content" id="tab-camera">
-    <div class="camera-container">
-        <img id="camera-image" src="/camera/latest" alt="Live camera feed" />
-        <div class="camera-timestamp">Updated every 10 minutes · <span id="camera-updated">—</span></div>
-    </div>
-
-    <div class="card card--wide" style="margin-top: 1rem;">
-        <div class="card-label">Daily Timelapse</div>
-        <div id="timelapse-container">
-            <select id="timelapse-select" style="
-                background: var(--bg);
-                color: var(--text);
-                border: 1px solid var(--border);
-                border-radius: var(--radius-sm);
-                padding: 0.4rem 0.75rem;
-                font-size: 0.875rem;
-                margin-bottom: 1rem;
-            ">
-                <option value="">Select a date...</option>
-            </select>
-            <video id="timelapse-video" controls style="width: 100%; display: none; border-radius: var(--radius-sm);">
-                Your browser does not support video playback.
-            </video>
-            <div id="timelapse-empty" style="color: var(--text-muted); font-size: 0.875rem;">
-                No timelapse videos available yet — check back tomorrow.
-            </div>
         </div>
     </div>
 </section>
