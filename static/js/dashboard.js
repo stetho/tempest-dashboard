@@ -446,12 +446,6 @@ function populateRecords(d) {
 // ── Fetch and refresh ──────────────────────────────────────────
 async function refresh() {
     try {
-        const [current, history, rain, records] = await Promise.all([
-            fetch('/api/current').then(r => r.json()),
-            fetch('/api/history/24h').then(r => r.json()),
-            fetch('/api/rain/summary').then(r => r.json()),
-            fetch('/api/records').then(r => r.json()),
-        ]);
         const [current, history, rain, records, storm] = await Promise.all([
             fetch('/api/current').then(r => r.json()),
             fetch('/api/history/24h').then(r => r.json()),
