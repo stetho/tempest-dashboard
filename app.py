@@ -4,6 +4,7 @@ app.py — Flask dashboard for the Tempest weather station.
 import os
 import datetime
 from flask import Flask, render_template, jsonify, send_file
+from pathlib import Path
 from db import (
     get_latest_observation,
     get_observations_last_24h,
