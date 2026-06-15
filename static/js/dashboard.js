@@ -454,10 +454,6 @@ async function refresh() {
             fetch('/api/storm').then(r => r.json()),
         ]);
 
-populateCurrent(current);
-buildCharts(history);
-populateRain(rain);
-populateRecords(records);
         populateStorm(storm);
         
         populateCurrent(current);
