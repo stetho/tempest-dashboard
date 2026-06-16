@@ -1,5 +1,5 @@
 """
-app.py — Flask dashboard for the Tempest weather station.
+app.py — Flask dashboard for the Tempest  weather station.
 """
 import os
 import glob
