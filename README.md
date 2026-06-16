@@ -32,6 +32,7 @@ and presents everything in a tabbed, auto-refreshing interface.
   with data in its SQLite database
 - Docker and Docker Compose (for deployment)
 
+
 ## Local Development
 
 **1. Clone the repository**
