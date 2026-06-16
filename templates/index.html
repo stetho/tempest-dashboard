@@ -28,6 +28,7 @@
         <button class="tab-btn" data-tab="lightning">Lightning</button>
         <button class="tab-btn" data-tab="records">Records</button>
         <button class="tab-btn" data-tab="camera">Camera</button>
+        <button class="tab-btn" data-tab="microclimate">Microclimate</button>
     </nav>
 <main>
 
@@ -429,7 +430,80 @@
         </div>
     </div>
 </section>
+i<!-- MICROCLIMATE TAB -->
+<section class="tab-content" id="tab-microclimate">
+    <div class="card-grid">
 
+        <div class="card card--wide">
+            <div class="card-label">Temperature</div>
+            <div class="card-value card-value--text" id="mc-temp-interpretation">—</div>
+            <div class="card-sub" id="mc-temp-delta">—</div>
+        </div>
+
+        <div class="card card--wide">
+            <div class="card-label">Wind</div>
+            <div class="card-value card-value--text" id="mc-wind-interpretation">—</div>
+            <div class="card-sub" id="mc-wind-delta">—</div>
+        </div>
+
+        <div class="card">
+            <div class="card-label">Tempest Temperature</div>
+            <div class="card-value" id="mc-tempest-temp">—</div>
+            <div class="card-unit">°C</div>
+        </div>
+
+        <div class="card">
+            <div class="card-label">Model Temperature</div>
+            <div class="card-value" id="mc-model-temp">—</div>
+            <div class="card-unit">°C</div>
+            <div class="card-sub">Open-Meteo regional model</div>
+        </div>
+
+        <div class="card">
+            <div class="card-label">Tempest Humidity</div>
+            <div class="card-value" id="mc-tempest-humidity">—</div>
+            <div class="card-unit">%</div>
+        </div>
+
+        <div class="card">
+            <div class="card-label">Model Humidity</div>
+            <div class="card-value" id="mc-model-humidity">—</div>
+            <div class="card-unit">%</div>
+            <div class="card-sub">Open-Meteo regional model</div>
+        </div>
+
+        <div class="card">
+            <div class="card-label">Tempest Wind</div>
+            <div class="card-value" id="mc-tempest-wind">—</div>
+            <div class="card-unit">mph</div>
+        </div>
+
+        <div class="card">
+            <div class="card-label">Model Wind</div>
+            <div class="card-value" id="mc-model-wind">—</div>
+            <div class="card-unit">mph</div>
+            <div class="card-sub">Open-Meteo regional model</div>
+        </div>
+
+        <div class="card" id="mc-uv-card">
+            <div class="card-label">Tempest UV</div>
+            <div class="card-value" id="mc-tempest-uv">—</div>
+        </div>
+
+        <div class="card" id="mc-model-uv-card">
+            <div class="card-label">Model UV</div>
+            <div class="card-value" id="mc-model-uv">—</div>
+            <div class="card-sub">Open-Meteo regional model</div>
+        </div>
+
+        <div class="card card--wide">
+            <div class="card-label">Model Time</div>
+            <div class="card-value card-value--text" id="mc-model-time">—</div>
+            <div class="card-sub">Open-Meteo data is updated hourly</div>
+        </div>
+
+    </div>
+</section>
     </main>
 
     <script src="/static/js/dashboard.js"></script>

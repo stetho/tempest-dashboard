@@ -40,7 +40,31 @@ function uvRisk(uv) {
     if (uv >= 3)  return 'Moderate';
     return 'Low';
 }
+function populateMicroclimate(d) {
+    if (d.error) return;
 
+    set('mc-temp-interpretation', d.interpretation.temperature);
+    set('mc-temp-delta', `Delta: ${d.deltas.temperature > 0 ? '+' : ''}${d.deltas.temperature}°C`);
+    set('mc-wind-interpretation', d.interpretation.wind);
+    set('mc-wind-delta', `Delta: ${d.deltas.wind > 0 ? '+' : ''}${d.deltas.wind} mph`);
+
+    set('mc-tempest-temp', d.tempest.temperature);
+    set('mc-model-temp', d.open_meteo.temperature);
+    set('mc-tempest-humidity', d.tempest.humidity);
+    set('mc-model-humidity', d.open_meteo.humidity);
+    set('mc-tempest-wind', d.tempest.wind_avg);
+    set('mc-model-wind', d.open_meteo.wind_avg);
+
+    if (d.deltas.uv_valid) {
+        set('mc-tempest-uv', d.tempest.uv);
+        set('mc-model-uv', d.open_meteo.uv);
+    } else {
+        set('mc-tempest-uv', 'N/A (night)');
+        set('mc-model-uv', 'N/A (night)');
+    }
+
+    set('mc-model-time', d.open_meteo_time);
+}
 // ── Timelapse ─────────────────────────────────────────────────
 async function loadTimelapse() {
     try {
@@ -452,10 +476,11 @@ async function refresh() {
             fetch('/api/rain/summary').then(r => r.json()),
             fetch('/api/records').then(r => r.json()),
             fetch('/api/storm').then(r => r.json()),
+            fetch('/api/microclimate').then(r => r.json()),
         ]);
 
         populateStorm(storm);
-        
+        populateMicroclimate(microclimate);
         populateCurrent(current);
         buildCharts(history);
         populateRain(rain);

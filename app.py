@@ -19,6 +19,8 @@ from analytics.temperature import absolute_humidity, frost_risk, thermal_comfort
 from analytics.rain import rain_intensity, spell_tracker, antecedent_rainfall_index
 from analytics.lightning import lightning_safety
 from analytics.records import get_all_time_records, get_daily_records, get_station_info
+from analytics.microclimate import fetch_open_meteo, compare_microclimate
+
 
 from db import (
     get_latest_observation,
@@ -199,6 +201,18 @@ def build_current_conditions(obs: dict, pressure_obs: list[dict]) -> dict:
 @app.route("/")
 def index():
     return render_template("index.html", station=STATION_NAME)
+
+@app.route("/api/microclimate")
+def api_microclimate():
+    obs = get_latest_observation()
+    if not obs:
+        return jsonify({"error": "No observations found"}), 404
+    try:
+        open_meteo = fetch_open_meteo(LATITUDE, LONGITUDE)
+        result = compare_microclimate(obs, open_meteo)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/api/storm")
 def api_storm():
