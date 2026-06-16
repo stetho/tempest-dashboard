@@ -1,0 +1,34 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.2.2
+
+      - name: Log in to registry
+        uses: docker/login-action@v3.3.0
+        with:
+          registry: registry.stetho.me
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6.10.0
+        with:
+          context: .
+          push: true
+          tags: registry.stetho.me/stetho/tempest-dashboard:latest
+
+      - name: Trigger deployment
+        run: |
+          curl -X POST https://deploy.23wwc.cloud/webhook/tempest-dashboard \
+            -H "X-Webhook-Secret: ${{ secrets.WEBHOOK_SECRET }}" \
+            -H "Content-Type: application/json"
