@@ -11,6 +11,8 @@ from db import (
     get_observations_last_24h,
     get_daily_totals,
     get_pressure_last_3h,
+    DB_PATH,
+    get_connection,
 )
 from analytics.pressure import pressure_change_rate, zambretti_forecast, storm_predictor
 from analytics.wind import beaufort_scale, gust_factor, wind_direction_compass
@@ -20,7 +22,7 @@ from analytics.rain import rain_intensity, spell_tracker, antecedent_rainfall_in
 from analytics.lightning import lightning_safety
 from analytics.records import get_all_time_records, get_daily_records, get_station_info
 from analytics.microclimate import fetch_open_meteo, compare_microclimate
-
+from analytics.evapotranspiration import penman_monteith_et
 
 from db import (
     get_latest_observation,
@@ -201,6 +203,29 @@ def build_current_conditions(obs: dict, pressure_obs: list[dict]) -> dict:
 @app.route("/")
 def index():
     return render_template("index.html", station=STATION_NAME)
+
+@app.route("/api/evapotranspiration")
+def api_evapotranspiration():
+    """Calculate ET₀ for yesterday using a full day of observations."""
+    import datetime
+    yesterday = datetime.date.today() - datetime.timedelta(days=1)
+    
+    with get_connection() as conn:
+        rows = conn.execute("""
+            SELECT 
+                timestamp, air_temperature, relative_humidity,
+                wind_avg, solar_radiation, sea_level_pressure
+            FROM observations
+            WHERE date(timestamp, 'unixepoch') = ?
+            ORDER BY timestamp ASC
+        """, (yesterday.isoformat(),)).fetchall()
+        obs = [dict(row) for row in rows]
+    
+    if not obs:
+        return jsonify({"error": "No observations for yesterday"}), 404
+    
+    result = penman_monteith_et(obs, LATITUDE, yesterday)
+    return jsonify(result)
 
 @app.route("/api/microclimate")
 def api_microclimate():

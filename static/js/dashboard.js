@@ -15,6 +15,12 @@ function set(id, value) {
     if (el) el.textContent = value;
 }
 
+function populateET(d) {
+    if (d.error) return;
+    set('et-value', `${d.et0_mm} mm — ${d.date}`);
+    set('et-interpretation', d.interpretation);
+}
+
 function setClass(id, className) {
     const el = document.getElementById(id);
     if (el) el.className = el.className.replace(/risk-\S+/g, '').trim() + ` ${className}`;
@@ -470,13 +476,14 @@ function populateRecords(d) {
 // ── Fetch and refresh ──────────────────────────────────────────
 async function refresh() {
     try {
-        const [current, history, rain, records, storm, microclimate] = await Promise.all([
+        const [current, history, rain, records, storm, microclimate, et] = await Promise.all([
             fetch('/api/current').then(r => r.json()),
             fetch('/api/history/24h').then(r => r.json()),
             fetch('/api/rain/summary').then(r => r.json()),
             fetch('/api/records').then(r => r.json()),
             fetch('/api/storm').then(r => r.json()),
             fetch('/api/microclimate').then(r => r.json()),
+            fetch('/api/evapotranspiration').then(r => r.json()),
         ]);
 
         populateStorm(storm);
@@ -485,6 +492,7 @@ async function refresh() {
         buildCharts(history);
         populateRain(rain);
         populateRecords(records);
+        populateET(et);
         
         // Populate rain tab from current
         set('rain-rate', current.rain.current_rate.toFixed(1));
