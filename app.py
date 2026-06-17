@@ -34,8 +34,8 @@ from db import (
 
 app = Flask(__name__)
 
-LATITUDE = 51.38909
-LONGITUDE = -0.08738
+LATITUDE = float(os.getenv("STATION_LATITUDE", "51.5"))
+LONGITUDE = float(os.getenv("STATION_LONGITUDE", "-0.1"))
 STATION_NAME = "Selhurst"
 CAMERA_PATH = os.getenv("CAMERA_PATH", "/camera/latest.jpg")
 TIMELAPSE_DIR = Path(os.getenv("CAMERA_PATH", "/camera/latest.jpg")).parent / "timelapse"
