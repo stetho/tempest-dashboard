@@ -23,6 +23,8 @@ from analytics.lightning import lightning_safety
 from analytics.records import get_all_time_records, get_daily_records, get_station_info
 from analytics.microclimate import fetch_open_meteo, compare_microclimate
 from analytics.evapotranspiration import penman_monteith_et
+from analytics.ml import NaiveBayesRainPredictor, build_training_dataframe, predict_from_observation
+
 
 from db import (
     get_latest_observation,
@@ -203,6 +205,39 @@ def build_current_conditions(obs: dict, pressure_obs: list[dict]) -> dict:
 @app.route("/")
 def index():
     return render_template("index.html", station=STATION_NAME)
+
+@app.route("/api/ml/rain")
+def api_ml_rain():
+    """Train Naive Bayes model on historical data and predict rain probability."""
+    try:
+        # Build training data from the database
+        df = build_training_dataframe(DB_PATH)
+        
+        if len(df) < 50:
+            return jsonify({"error": "Not enough data to train model"}), 404
+
+        # Train model
+        model = NaiveBayesRainPredictor(smoothing=1.0)
+        model.fit(df)
+
+        # Get current and 1 hour ago observations
+        with get_connection() as conn:
+            current = dict(conn.execute("""
+                SELECT * FROM observations 
+                ORDER BY timestamp DESC LIMIT 1
+            """).fetchone())
+
+            previous = dict(conn.execute("""
+                SELECT * FROM observations
+                WHERE timestamp <= ? - 3600
+                ORDER BY timestamp DESC LIMIT 1
+            """, (current['timestamp'],)).fetchone())
+
+        result = predict_from_observation(model, current, previous)
+        return jsonify(result)
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/api/evapotranspiration")
 def api_evapotranspiration():

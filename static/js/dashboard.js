@@ -435,6 +435,13 @@ function populateRain(d) {
     set('rain-ari-desc', d.antecedent_rainfall_index.description);
 }
 
+function populateMLRain(d) {
+    if (d.error) return;
+    set('ml-rain-probability', `${Math.round(d.rain_probability * 100)}%`);
+    set('ml-rain-explanation', d.explanation);
+    set('ml-rain-trained', `Trained on ${d.trained_on} observations`);
+}
+
 function populateRecords(d) {
     const a = d.all_time;
     const day = d.daily;
@@ -484,6 +491,7 @@ async function refresh() {
             fetch('/api/storm').then(r => r.json()),
             fetch('/api/microclimate').then(r => r.json()),
             fetch('/api/evapotranspiration').then(r => r.json()),
+            fetch('/api/ml/rain').then(r => r.json()),
         ]);
 
         populateStorm(storm);
@@ -493,6 +501,7 @@ async function refresh() {
         populateRain(rain);
         populateRecords(records);
         populateET(et);
+        populateMLRain(mlRain);
         
         // Populate rain tab from current
         set('rain-rate', current.rain.current_rate.toFixed(1));
