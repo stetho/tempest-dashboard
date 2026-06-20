@@ -26,13 +26,6 @@ from analytics.evapotranspiration import penman_monteith_et
 from analytics.ml import NaiveBayesRainPredictor, build_training_dataframe, predict_from_observation
 
 
-from db import (
-    get_latest_observation,
-    get_observations_last_24h,
-    get_daily_totals,
-    get_pressure_last_3h,
-    DB_PATH,
-)
 
 app = Flask(__name__)
 
@@ -182,8 +175,8 @@ def build_current_conditions(obs: dict, pressure_obs: list[dict]) -> dict:
             "current_rate": obs["precip"],
             "intensity": intensity["intensity"],
             "intensity_description": intensity["description"],
-            "today_total": obs["precip_accum_local_day"],
-            "yesterday_total": obs["precip_accum_local_yesterday"],
+            "today_total": round(obs["precip_accum_local_day"], 2),
+            "yesterday_total": round(obs["precip_accum_local_yesterday"], 2),
         },
 
         "lightning": {
@@ -205,6 +198,96 @@ def build_current_conditions(obs: dict, pressure_obs: list[dict]) -> dict:
 @app.route("/")
 def index():
     return render_template("index.html", station=STATION_NAME)
+
+@app.route("/api/ha")
+@app.route("/api/ha")
+def api_ha():
+    """
+    Home Assistant compatible endpoint.
+    Returns all current readings and derived analytics in a single payload.
+    """
+    try:
+        obs = get_latest_observation()
+        if not obs:
+            return jsonify({"error": "No observations found"}), 404
+
+        pressure_obs = get_pressure_last_3h()
+        now = datetime.datetime.utcnow()
+
+        # Use build_current_conditions to get everything already calculated
+        conditions = build_current_conditions(obs, pressure_obs)
+
+        # Storm predictor
+        storm = storm_predictor(pressure_obs) if len(pressure_obs) >= 2 else None
+
+        # ML rain prediction
+        ml_result = None
+        try:
+            df = build_training_dataframe(DB_PATH)
+            if len(df) >= 50:
+                model = NaiveBayesRainPredictor(smoothing=1.0)
+                model.fit(df)
+                with get_connection() as conn:
+                    previous = dict(conn.execute("""
+                        SELECT * FROM observations
+                        WHERE timestamp <= ? - 3600
+                        ORDER BY timestamp DESC LIMIT 1
+                    """, (obs["timestamp"],)).fetchone())
+                ml_result = predict_from_observation(model, obs, previous)
+        except Exception:
+            pass
+
+        # Microclimate
+        microclimate_result = None
+        try:
+            open_meteo = fetch_open_meteo(LATITUDE, LONGITUDE)
+            mc = compare_microclimate(obs, open_meteo)
+            microclimate_result = {
+                "temp_delta": mc["deltas"]["temperature"],
+                "temp_interpretation": mc["interpretation"]["temperature"],
+                "wind_delta": mc["deltas"]["wind"],
+                "wind_interpretation": mc["interpretation"]["wind"],
+            }
+        except Exception:
+            pass
+
+        timestamp = datetime.datetime.utcfromtimestamp(obs["timestamp"]).strftime(
+            "%Y-%m-%dT%H:%M:%SZ"
+        )
+
+        payload = {
+            "timestamp": timestamp,
+            "station": STATION_NAME,
+            "temperature": conditions["temperature"],
+            "humidity": conditions["humidity"],
+            "pressure": conditions["pressure"],
+            "wind": conditions["wind"],
+            "solar": conditions["solar"],
+            "rain": conditions["rain"],
+            "lightning": conditions["lightning"],
+            "analytics": {
+                "frost_risk": conditions["frost"]["risk_level"],
+                "frost_description": conditions["frost"]["description"],
+                "storm_predictor": {
+                    "probability": storm["probability"],
+                    "category": storm["category"],
+                    "description": storm["description"],
+                    "advice": storm["advice"],
+                } if storm else None,
+                "ml_rain": {
+                    "probability": ml_result["rain_probability"],
+                    "explanation": ml_result["explanation"],
+                    "trained_on": ml_result["trained_on"],
+                } if ml_result else None,
+                "microclimate": microclimate_result,
+            },
+        }
+
+        return jsonify(payload)
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 @app.route("/api/ml/rain")
 def api_ml_rain():
