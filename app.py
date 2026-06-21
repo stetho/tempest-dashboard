@@ -1,6 +1,7 @@
 """
 app.py — Flask dashboard for the Tempest  weather station.
 """
+import air_db
 import os
 import glob
 import datetime
@@ -14,6 +15,7 @@ from db import (
     DB_PATH,
     get_connection,
 )
+from functools import wraps
 from analytics.pressure import pressure_change_rate, zambretti_forecast, storm_predictor
 from analytics.wind import beaufort_scale, gust_factor, wind_direction_compass
 from analytics.solar import clear_sky_index, uv_dose_accumulator
@@ -34,6 +36,17 @@ LONGITUDE = float(os.getenv("STATION_LONGITUDE", "-0.1"))
 STATION_NAME = "Selhurst"
 CAMERA_PATH = os.getenv("CAMERA_PATH", "/camera/latest.jpg")
 TIMELAPSE_DIR = Path(os.getenv("CAMERA_PATH", "/camera/latest.jpg")).parent / "timelapse"
+AIR_INGEST_SECRET = os.getenv("AIR_INGEST_SECRET", "")
+
+def require_air_secret(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        secret = request.headers.get("X-Air-Secret", "")
+        if not AIR_INGEST_SECRET or secret != AIR_INGEST_SECRET:
+            return jsonify({"error": "Unauthorised"}), 401
+        return f(*args, **kwargs)
+    return decorated
+
 
 def get_utc_offset(timestamp: int) -> float:
     """
@@ -199,7 +212,37 @@ def build_current_conditions(obs: dict, pressure_obs: list[dict]) -> dict:
 def index():
     return render_template("index.html", station=STATION_NAME)
 
-@app.route("/api/ha")
+@app.route("/api/ingest/air", methods=["POST"])
+@require_air_secret
+def ingest_air():
+    """Receive a batch of air quality readings from tempest-air on the Pi."""
+    payload = request.get_json(silent=True)
+    if not payload or "readings" not in payload:
+        return jsonify({"error": "Invalid payload"}), 400
+
+    readings = payload["readings"]
+    if not isinstance(readings, list) or not readings:
+        return jsonify({"error": "readings must be a non-empty list"}), 400
+
+    inserted = air_db.insert_readings(readings)
+    return jsonify({"inserted": inserted, "received": len(readings)}), 200
+
+
+@app.route("/api/air/current")
+def api_air_current():
+    """Latest air quality reading with derived AQI/DAQI."""
+    latest = air_db.get_latest()
+    if not latest:
+        return jsonify({"error": "No air quality data available"}), 404
+    return jsonify(latest)
+
+
+@app.route("/api/air/history/24h")
+def api_air_history():
+    """24 hours of air quality readings."""
+    rows = air_db.get_history_24h()
+    return jsonify(rows)
+
 @app.route("/api/ha")
 def api_ha():
     """
