@@ -30,7 +30,7 @@ from analytics.ml import NaiveBayesRainPredictor, build_training_dataframe, pred
 
 
 app = Flask(__name__)
-
+air_db.init_db()
 LATITUDE = float(os.getenv("STATION_LATITUDE", "51.5"))
 LONGITUDE = float(os.getenv("STATION_LONGITUDE", "-0.1"))
 STATION_NAME = "Selhurst"
