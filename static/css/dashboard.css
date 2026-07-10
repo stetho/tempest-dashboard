@@ -131,6 +131,11 @@ header h1 {
 }
 
 /* ── Cards ── */
+.card--warning {
+    border-color: var(--warning);
+    background: rgba(245, 158, 11, 0.1);
+}
+
 .card {
     background: var(--bg-card);
     border: 1px solid var(--border);

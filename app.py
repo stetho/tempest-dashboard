@@ -26,6 +26,7 @@ from analytics.records import get_all_time_records, get_daily_records, get_stati
 from analytics.microclimate import fetch_open_meteo, compare_microclimate
 from analytics.evapotranspiration import penman_monteith_et
 from analytics.ml import NaiveBayesRainPredictor, build_training_dataframe, predict_from_observation
+from analytics.heatwave import heatwave_status
 
 
 
@@ -67,6 +68,32 @@ def get_utc_offset(timestamp: int) -> float:
     if bst_start <= dt < bst_end:
         return 1.0  # BST
     return 0.0  # GMT
+
+def get_daily_max_temperatures(days: int = 30) -> list[dict]:
+    """Return daily max temperatures for completed days, newest first."""
+    with get_connection() as conn:
+        rows = conn.execute("""
+            SELECT
+                date(timestamp, 'unixepoch') as day,
+                ROUND(MAX(air_temperature), 1) as max_temp
+            FROM observations
+            WHERE date(timestamp, 'unixepoch') < date('now')
+            GROUP BY day
+            ORDER BY day DESC
+            LIMIT ?
+        """, (days,)).fetchall()
+        return [dict(row) for row in rows]
+
+
+def get_todays_max_temperature() -> float | None:
+    """Return the highest temperature recorded so far today."""
+    with get_connection() as conn:
+        row = conn.execute("""
+            SELECT ROUND(MAX(air_temperature), 1) as max_temp
+            FROM observations
+            WHERE date(timestamp, 'unixepoch') = date('now')
+        """).fetchone()
+        return row["max_temp"] if row else None
 
 def build_current_conditions(obs: dict, pressure_obs: list[dict]) -> dict:
     """
@@ -211,6 +238,14 @@ def build_current_conditions(obs: dict, pressure_obs: list[dict]) -> dict:
 @app.route("/")
 def index():
     return render_template("index.html", station=STATION_NAME)
+
+@app.route("/api/heatwave")
+def api_heatwave():
+    threshold = float(os.getenv("HEATWAVE_THRESHOLD", "28.0"))
+    daily = get_daily_max_temperatures(days=30)
+    todays_max = get_todays_max_temperature()
+    result = heatwave_status(daily, todays_max, threshold)
+    return jsonify(result)
 
 @app.route("/api/ingest/air", methods=["POST"])
 @require_air_secret

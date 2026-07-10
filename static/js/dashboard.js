@@ -8,6 +8,26 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     });
 });
 
+// –– Heatwave ––––––––––––––––––––––––––––––––––––––––––––––––––
+
+function populateHeatwave(d) {
+    if (!d || d.error) return;
+    const card = document.getElementById('heatwave-card');
+    if (d.status === 'none') {
+        set('cur-heatwave', 'No heatwave');
+        set('cur-heatwave-advice', d.todays_max !== null ? `Today's high so far: ${d.todays_max}°C` : '—');
+        card.className = 'card card--wide';
+    } else if (d.status === 'monitoring') {
+        set('cur-heatwave', d.description);
+        set('cur-heatwave-advice', d.todays_max !== null ? `Today's high so far: ${d.todays_max}°C · ${d.advice}` : d.advice);
+        card.className = 'card card--wide card--warning';
+    } else {
+        set('cur-heatwave', d.description);
+        set('cur-heatwave-advice', d.todays_max !== null ? `Today's high so far: ${d.todays_max}°C · ${d.advice}` : d.advice);
+        card.className = 'card card--wide card--danger';
+    }
+}
+
 // ── Air quality ───────────────────────────────────────────────
 function daqiLabel(daqi) {
     if (daqi <= 3)  return 'Low';
@@ -542,9 +562,10 @@ function populateRecords(d) {
 
 async function refresh() {
     try {
-        const [current, history, rain, records, storm, microclimate, et, mlRain, airCurrent, airHistory] = await Promise.all([
+        const [current, history, rain, heatwave, records, storm, microclimate, et, mlRain, airCurrent, airHistory] = await Promise.all([
             fetch('/api/current').then(r => r.json()),
             fetch('/api/history/24h').then(r => r.json()),
+            fetch('/api/heatwave').then(r => r.ok ? r.json() : null),
             fetch('/api/rain/summary').then(r => r.json()),
             fetch('/api/records').then(r => r.json()),
             fetch('/api/storm').then(r => r.json()),
@@ -564,6 +585,7 @@ async function refresh() {
         populateET(et);
         populateMLRain(mlRain);
         populateAir(airCurrent);
+        populateHeatwave(heatwave);
         buildAirCharts(airHistory);
 
         set('rain-rate', current.rain.current_rate.toFixed(1));
