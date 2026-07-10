@@ -562,7 +562,7 @@ function populateRecords(d) {
 
 async function refresh() {
     try {
-        const [current, history, rain, heatwave, records, storm, microclimate, et, mlRain, airCurrent, airHistory] = await Promise.all([
+        const [current, history, heatwave, rain, records, storm, microclimate, et, mlRain, airCurrent, airHistory] = await Promise.all([
             fetch('/api/current').then(r => r.json()),
             fetch('/api/history/24h').then(r => r.json()),
             fetch('/api/heatwave').then(r => r.ok ? r.json() : null),
