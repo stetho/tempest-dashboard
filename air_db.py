@@ -159,13 +159,11 @@ def insert_readings(readings: list[dict]) -> int:
                     INSERT OR IGNORE INTO readings (
                         timestamp,
                         pm1_0, pm2_5, pm10,
-                        pm1_0_atmos, pm2_5_atmos, pm10_atmos,
                         p03um, p05um, p10um, p25um, p50um, p100um,
                         aqi_pm25, aqi_pm10, aqi, daqi, aqi_category
                     ) VALUES (
                         :timestamp,
                         :pm1_0, :pm2_5, :pm10,
-                        :pm1_0_atmos, :pm2_5_atmos, :pm10_atmos,
                         :p03um, :p05um, :p10um, :p25um, :p50um, :p100um,
                         :aqi_pm25, :aqi_pm10, :aqi, :daqi, :aqi_category
                     )
