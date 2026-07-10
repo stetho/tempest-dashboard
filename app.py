@@ -149,18 +149,32 @@ def build_current_conditions(obs: dict, pressure_obs: list[dict]) -> dict:
     # Lightning
     # The Tempest reports a default distance of 10 miles when there are
     # no recent strikes. Treat zero strike count as no activity.
+
     if obs["lightning_strike_count"] == 0:
+        last_epoch = obs.get("lightning_strike_last_epoch")
+        if last_epoch:
+            hours_ago = (obs["timestamp"] - last_epoch) / 3600
+            if hours_ago < 24:
+                hours = int(hours_ago)
+                mins = int((hours_ago - hours) * 60)
+                time_str = f"{hours}h {mins}m ago" if hours > 0 else f"{mins}m ago"
+                advice = f"Last strike {obs['lightning_strike_last_distance']} miles away, {time_str}."
+            else:
+                advice = "No lightning activity in the last 24 hours."
+        else:
+            advice = "No lightning activity detected."
         safety = {
             "risk_level": "Very Low",
             "safe_to_be_outside": True,
-            "description": "No recent lightning detected",
-            "advice": "No lightning activity detected in the last observation.",
+            "description": "No recent lightning",
+            "advice": advice,
         }
     else:
         safety = lightning_safety(
             obs["lightning_strike_last_distance"],
             obs["lightning_strike_count"]
         )
+
     return {
         "station": STATION_NAME,
         "timestamp": obs["timestamp"],
