@@ -31,70 +31,57 @@
         <button class="tab-btn" data-tab="camera">Camera</button>
         <button class="tab-btn" data-tab="microclimate">Microclimate</button>
     </nav>
-<main>
 
-
-
-
-
+    <main>
 
         <!-- CURRENT TAB -->
         <section class="tab-content active" id="tab-current">
             <div class="card-grid">
-
                 <div class="card card--large">
                     <div class="card-label">Temperature</div>
                     <div class="card-value" id="cur-temp">—</div>
                     <div class="card-unit">°C</div>
                     <div class="card-sub" id="cur-feels-like">Feels like —</div>
                 </div>
-
                 <div class="card">
                     <div class="card-label">Humidity</div>
                     <div class="card-value" id="cur-humidity">—</div>
                     <div class="card-unit">%</div>
                     <div class="card-sub" id="cur-humidity-desc">—</div>
                 </div>
-
                 <div class="card">
                     <div class="card-label">Wind</div>
                     <div class="card-value" id="cur-wind">—</div>
                     <div class="card-unit">mph</div>
                     <div class="card-sub" id="cur-wind-desc">—</div>
                 </div>
-
                 <div class="card">
                     <div class="card-label">Pressure</div>
                     <div class="card-value" id="cur-pressure">—</div>
                     <div class="card-unit">mb</div>
                     <div class="card-sub" id="cur-pressure-trend">—</div>
                 </div>
-
                 <div class="card">
                     <div class="card-label">UV Index</div>
                     <div class="card-value" id="cur-uv">—</div>
                     <div class="card-sub" id="cur-sky">—</div>
                 </div>
-
                 <div class="card">
                     <div class="card-label">Rain Today</div>
                     <div class="card-value" id="cur-rain">—</div>
                     <div class="card-unit">mm</div>
                     <div class="card-sub" id="cur-rain-intensity">—</div>
                 </div>
-
                 <div class="card card--wide">
                     <div class="card-label">Forecast</div>
                     <div class="card-value card-value--text" id="cur-forecast">—</div>
                     <div class="card-sub" id="cur-comfort">—</div>
                 </div>
-
                 <div class="card card--wide" id="lightning-card">
                     <div class="card-label">Lightning</div>
                     <div class="card-value card-value--text" id="cur-lightning">—</div>
                     <div class="card-sub" id="cur-lightning-advice">—</div>
                 </div>
-
             </div>
         </section>
 
@@ -141,6 +128,50 @@
             </div>
             <div class="chart-container">
                 <canvas id="chart-temperature"></canvas>
+            </div>
+        </section>
+
+        <!-- AIR QUALITY TAB -->
+        <section class="tab-content" id="tab-air">
+            <div class="card-grid">
+                <div class="card card--large" id="air-aqi-card">
+                    <div class="card-label">Air Quality Index</div>
+                    <div class="card-value" id="air-aqi">—</div>
+                    <div class="card-sub" id="air-aqi-category">—</div>
+                </div>
+                <div class="card card--large" id="air-daqi-card">
+                    <div class="card-label">UK Air Quality (DAQI)</div>
+                    <div class="card-value" id="air-daqi">—</div>
+                    <div class="card-sub" id="air-daqi-desc">—</div>
+                </div>
+                <div class="card">
+                    <div class="card-label">PM2.5</div>
+                    <div class="card-value" id="air-pm25">—</div>
+                    <div class="card-unit">µg/m³</div>
+                    <div class="card-sub">Combustion &amp; organic</div>
+                </div>
+                <div class="card">
+                    <div class="card-label">PM10</div>
+                    <div class="card-value" id="air-pm10">—</div>
+                    <div class="card-unit">µg/m³</div>
+                    <div class="card-sub">Dust, pollen, mould</div>
+                </div>
+                <div class="card">
+                    <div class="card-label">PM1.0</div>
+                    <div class="card-value" id="air-pm1">—</div>
+                    <div class="card-unit">µg/m³</div>
+                    <div class="card-sub">Ultrafine particles</div>
+                </div>
+                <div class="card">
+                    <div class="card-label">Last Reading</div>
+                    <div class="card-value card-value--text" id="air-timestamp">—</div>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="chart-air-pm"></canvas>
+            </div>
+            <div class="chart-container" style="margin-top: 1rem;">
+                <canvas id="chart-air-particles"></canvas>
             </div>
         </section>
 
@@ -320,312 +351,177 @@
         <!-- RECORDS TAB -->
         <section class="tab-content" id="tab-records">
             <div class="card-grid">
-               <div class="card card--wide">
-               <div class="card-label">Station</div>
-               <div class="card-value card-value--text" id="rec-station-info">—</div>
-            </div>
-
-        <div class="card">
-            <div class="card-label">Hottest Temperature</div>
-            <div class="card-value" id="rec-hottest">—</div>
-            <div class="card-unit">°C</div>
-            <div class="card-sub" id="rec-hottest-date">—</div>
-        </div>
-
-        <div class="card">
-            <div class="card-label">Coldest Temperature</div>
-            <div class="card-value" id="rec-coldest">—</div>
-            <div class="card-unit">°C</div>
-            <div class="card-sub" id="rec-coldest-date">—</div>
-        </div>
-
-        <div class="card">
-            <div class="card-label">Strongest Gust</div>
-            <div class="card-value" id="rec-gust">—</div>
-            <div class="card-unit">mph</div>
-            <div class="card-sub" id="rec-gust-date">—</div>
-        </div>
-
-        <div class="card">
-            <div class="card-label">Highest Wind</div>
-            <div class="card-value" id="rec-wind">—</div>
-            <div class="card-unit">mph</div>
-            <div class="card-sub" id="rec-wind-date">—</div>
-        </div>
-
-        <div class="card">
-            <div class="card-label">Highest Pressure</div>
-            <div class="card-value" id="rec-pressure-high">—</div>
-            <div class="card-unit">mb</div>
-            <div class="card-sub" id="rec-pressure-high-date">—</div>
-        </div>
-
-        <div class="card">
-            <div class="card-label">Lowest Pressure</div>
-            <div class="card-value" id="rec-pressure-low">—</div>
-            <div class="card-unit">mb</div>
-            <div class="card-sub" id="rec-pressure-low-date">—</div>
-        </div>
-
-        <div class="card">
-            <div class="card-label">Highest UV Index</div>
-            <div class="card-value" id="rec-uv">—</div>
-            <div class="card-sub" id="rec-uv-date">—</div>
-        </div>
-
-        <div class="card">
-            <div class="card-label">Highest Solar</div>
-            <div class="card-value" id="rec-solar">—</div>
-            <div class="card-unit">W/m²</div>
-            <div class="card-sub" id="rec-solar-date">—</div>
-        </div>
-
-        <div class="card">
-            <div class="card-label">Wettest Day</div>
-            <div class="card-value" id="rec-wettest-day">—</div>
-            <div class="card-unit">mm</div>
-            <div class="card-sub" id="rec-wettest-day-date">—</div>
-        </div>
-
-        <div class="card">
-            <div class="card-label">Hottest Day</div>
-            <div class="card-value" id="rec-hottest-day">—</div>
-            <div class="card-unit">°C</div>
-            <div class="card-sub" id="rec-hottest-day-date">—</div>
-        </div>
-
-        <div class="card">
-            <div class="card-label">Coldest Night</div>
-            <div class="card-value" id="rec-coldest-night">—</div>
-            <div class="card-unit">°C</div>
-            <div class="card-sub" id="rec-coldest-night-date">—</div>
-        </div>
-
-        <div class="card">
-            <div class="card-label">Windiest Day</div>
-            <div class="card-value" id="rec-windiest-day">—</div>
-            <div class="card-unit">mph</div>
-            <div class="card-sub" id="rec-windiest-day-date">—</div>
-        </div>
-    </div>
-</section>
-
-<!-- CAMERA TAB -->
-
-
-<section class="tab-content" id="tab-camera">
-    <div class="camera-container">
-        <img id="camera-image" src="/camera/latest" alt="Live camera feed" />
-        <div class="camera-timestamp">Updated every 10 minutes · <span id="camera-updated">—</span></div>
-    </div>
-
-    <div class="card card--wide" style="margin-top: 1rem;">
-        <div class="card-label">Daily Timelapse</div>
-        <div id="timelapse-container">
-            <select id="timelapse-select" style="
-                background: var(--bg);
-                color: var(--text);
-                border: 1px solid var(--border);
-                border-radius: var(--radius-sm);
-                padding: 0.4rem 0.75rem;
-                font-size: 0.875rem;
-                margin-bottom: 1rem;
-            ">
-                <option value="">Select a date...</option>
-            </select>
-            <video id="timelapse-video" controls style="width: 100%; display: none; border-radius: var(--radius-sm);">
-                Your browser does not support video playback.
-            </video>
-            <div id="timelapse-empty" style="color: var(--text-muted); font-size: 0.875rem;">
-                No timelapse videos available yet — check back tomorrow.
-            </div>
-        </div>
-    </div>
-</section>
-<!-- MICROCLIMATE TAB -->
-<section class="tab-content" id="tab-microclimate">
-    <div class="card-grid">
-
-        <div class="card card--wide">
-            <div class="card-label">Temperature</div>
-            <div class="card-value card-value--text" id="mc-temp-interpretation">—</div>
-            <div class="card-sub" id="mc-temp-delta">—</div>
-        </div>
-
-        <div class="card card--wide">
-            <div class="card-label">Wind</div>
-            <div class="card-value card-value--text" id="mc-wind-interpretation">—</div>
-            <div class="card-sub" id="mc-wind-delta">—</div>
-        </div>
-
-        <div class="card">
-            <div class="card-label">Tempest Temperature</div>
-            <div class="card-value" id="mc-tempest-temp">—</div>
-            <div class="card-unit">°C</div>
-        </div>
-
-        <div class="card">
-            <div class="card-label">Model Temperature</div>
-            <div class="card-value" id="mc-model-temp">—</div>
-            <div class="card-unit">°C</div>
-            <div class="card-sub">Open-Meteo regional model</div>
-        </div>
-
-        <div class="card">
-            <div class="card-label">Tempest Humidity</div>
-            <div class="card-value" id="mc-tempest-humidity">—</div>
-            <div class="card-unit">%</div>
-        </div>
-
-        <div class="card">
-            <div class="card-label">Model Humidity</div>
-            <div class="card-value" id="mc-model-humidity">—</div>
-            <div class="card-unit">%</div>
-            <div class="card-sub">Open-Meteo regional model</div>
-        </div>
-
-        <div class="card">
-            <div class="card-label">Tempest Wind</div>
-            <div class="card-value" id="mc-tempest-wind">—</div>
-            <div class="card-unit">mph</div>
-        </div>
-
-        <div class="card">
-            <div class="card-label">Model Wind</div>
-            <div class="card-value" id="mc-model-wind">—</div>
-            <div class="card-unit">mph</div>
-            <div class="card-sub">Open-Meteo regional model</div>
-        </div>
-
-        <div class="card" id="mc-uv-card">
-            <div class="card-label">Tempest UV</div>
-            <div class="card-value" id="mc-tempest-uv">—</div>
-        </div>
-
-        <div class="card" id="mc-model-uv-card">
-            <div class="card-label">Model UV</div>
-            <div class="card-value" id="mc-model-uv">—</div>
-            <div class="card-sub">Open-Meteo regional model</div>
-        </div>
-
-        <div class="card card--wide">
-            <div class="card-label">Model Time</div>
-            <div class="card-value card-value--text" id="mc-model-time">—</div>
-            <div class="card-sub">Open-Meteo data is updated hourly</div>
-        </div>
-
-    </div>
-</section>
-        <!-- AIR QUALITY TAB -->
-        <section class="tab-content" id="tab-air">
-            <div class="card-grid">
-
-                <!-- AQI -->
-                <div class="card card--large" id="air-aqi-card">
-                    <div class="card-label">Air Quality Index</div>
-                    <div class="card-value" id="air-aqi">—</div>
-                    <div class="card-sub" id="air-aqi-category">—</div>
+                <div class="card card--wide">
+                    <div class="card-label">Station</div>
+                    <div class="card-value card-value--text" id="rec-station-info">—</div>
                 </div>
-
-                <!-- UK DAQI -->
-                <div class="card card--large" id="air-daqi-card">
-                    <div class="card-label">UK Air Quality (DAQI)</div>
-                    <div class="card-value" id="air-daqi">—</div>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ station }} Weather Station</title>
-    <link rel="stylesheet" href="/static/css/dashboard.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-</head>
-<body>
-    <header>
-        <div class="header-left">
-            <h1>{{ station }}</h1>
-            <span class="subtitle">Personal Weather Station</span>
-        </div>
-        <div class="header-right">
-            <span class="last-updated">Last updated: <span id="last-updated">—</span></span>
-        </div>
-    </header>
-
-    <nav class="tabs">
-        <button class="tab-btn active" data-tab="current">Current</button>
-        <button class="tab-btn" data-tab="temperature">Temperature</button>
-        <button class="tab-btn" data-tab="wind">Wind</button>
-        <button class="tab-btn" data-tab="pressure">Pressure</button>
-        <button class="tab-btn" data-tab="solar">Solar</button>
-        <button class="tab-btn" data-tab="rain">Rain</button>
-        <button class="tab-btn" data-tab="lightning">Lightning</button>
-        <button class="tab-btn" data-tab="records">Records</button>
-        <button class="tab-btn" data-tab="camera">Camera</button>
-        <button class="tab-btn" data-tab="microclimate">Microclimate</button>
-    </nav>
-<main>
-
-
-
-
-
-
-        <!-- CURRENT TAB -->
-        <section class="tab-content active" id="tab-current">
-            <div class="card-grid">
-
-                <div class="card card--large">
-                    <div class="card-label">Temperature</div>
-                    <div class="card-value" id="cur-temp">—</div>
+                <div class="card">
+                    <div class="card-label">Hottest Temperature</div>
+                    <div class="card-value" id="rec-hottest">—</div>
                     <div class="card-unit">°C</div>
-"templates/index.html" 522L, 22368B
-<!DOCTYPE html>
-                    <div class="card-sub" id="air-daqi-desc">—</div>
+                    <div class="card-sub" id="rec-hottest-date">—</div>
                 </div>
-
-                <!-- PM2.5 -->
                 <div class="card">
-                    <div class="card-label">PM2.5</div>
-                    <div class="card-value" id="air-pm25">—</div>
-                    <div class="card-unit">µg/m³</div>
-                    <div class="card-sub">Combustion &amp; organic</div>
+                    <div class="card-label">Coldest Temperature</div>
+                    <div class="card-value" id="rec-coldest">—</div>
+                    <div class="card-unit">°C</div>
+                    <div class="card-sub" id="rec-coldest-date">—</div>
                 </div>
-
-                <!-- PM10 -->
                 <div class="card">
-                    <div class="card-label">PM10</div>
-                    <div class="card-value" id="air-pm10">—</div>
-                    <div class="card-unit">µg/m³</div>
-                    <div class="card-sub">Dust, pollen, mould</div>
+                    <div class="card-label">Strongest Gust</div>
+                    <div class="card-value" id="rec-gust">—</div>
+                    <div class="card-unit">mph</div>
+                    <div class="card-sub" id="rec-gust-date">—</div>
                 </div>
-
-                <!-- PM1.0 -->
                 <div class="card">
-                    <div class="card-label">PM1.0</div>
-                    <div class="card-value" id="air-pm1">—</div>
-                    <div class="card-unit">µg/m³</div>
-                    <div class="card-sub">Ultrafine particles</div>
+                    <div class="card-label">Highest Wind</div>
+                    <div class="card-value" id="rec-wind">—</div>
+                    <div class="card-unit">mph</div>
+                    <div class="card-sub" id="rec-wind-date">—</div>
                 </div>
-
-                <!-- Last reading -->
                 <div class="card">
-                    <div class="card-label">Last Reading</div>
-                    <div class="card-value card-value--text" id="air-timestamp">—</div>
+                    <div class="card-label">Highest Pressure</div>
+                    <div class="card-value" id="rec-pressure-high">—</div>
+                    <div class="card-unit">mb</div>
+                    <div class="card-sub" id="rec-pressure-high-date">—</div>
                 </div>
-
+                <div class="card">
+                    <div class="card-label">Lowest Pressure</div>
+                    <div class="card-value" id="rec-pressure-low">—</div>
+                    <div class="card-unit">mb</div>
+                    <div class="card-sub" id="rec-pressure-low-date">—</div>
+                </div>
+                <div class="card">
+                    <div class="card-label">Highest UV Index</div>
+                    <div class="card-value" id="rec-uv">—</div>
+                    <div class="card-sub" id="rec-uv-date">—</div>
+                </div>
+                <div class="card">
+                    <div class="card-label">Highest Solar</div>
+                    <div class="card-value" id="rec-solar">—</div>
+                    <div class="card-unit">W/m²</div>
+                    <div class="card-sub" id="rec-solar-date">—</div>
+                </div>
+                <div class="card">
+                    <div class="card-label">Wettest Day</div>
+                    <div class="card-value" id="rec-wettest-day">—</div>
+                    <div class="card-unit">mm</div>
+                    <div class="card-sub" id="rec-wettest-day-date">—</div>
+                </div>
+                <div class="card">
+                    <div class="card-label">Hottest Day</div>
+                    <div class="card-value" id="rec-hottest-day">—</div>
+                    <div class="card-unit">°C</div>
+                    <div class="card-sub" id="rec-hottest-day-date">—</div>
+                </div>
+                <div class="card">
+                    <div class="card-label">Coldest Night</div>
+                    <div class="card-value" id="rec-coldest-night">—</div>
+                    <div class="card-unit">°C</div>
+                    <div class="card-sub" id="rec-coldest-night-date">—</div>
+                </div>
+                <div class="card">
+                    <div class="card-label">Windiest Day</div>
+                    <div class="card-value" id="rec-windiest-day">—</div>
+                    <div class="card-unit">mph</div>
+                    <div class="card-sub" id="rec-windiest-day-date">—</div>
+                </div>
             </div>
-
-            <!-- PM2.5 / PM10 24h chart -->
-            <div class="chart-container">
-                <canvas id="chart-air-pm"></canvas>
-            </div>
-
-            <!-- Particle counts 24h chart -->
-            <div class="chart-container">
-                <canvas id="chart-air-particles"></canvas>
-            </div>
-
         </section>
+
+        <!-- CAMERA TAB -->
+        <section class="tab-content" id="tab-camera">
+            <div class="camera-container">
+                <img id="camera-image" src="/camera/latest" alt="Live camera feed" />
+                <div class="camera-timestamp">Updated every 10 minutes · <span id="camera-updated">—</span></div>
+            </div>
+            <div class="card card--wide" style="margin-top: 1rem;">
+                <div class="card-label">Daily Timelapse</div>
+                <div id="timelapse-container">
+                    <select id="timelapse-select" style="
+                        background: var(--bg);
+                        color: var(--text);
+                        border: 1px solid var(--border);
+                        border-radius: var(--radius-sm);
+                        padding: 0.4rem 0.75rem;
+                        font-size: 0.875rem;
+                        margin-bottom: 1rem;
+                    ">
+                        <option value="">Select a date...</option>
+                    </select>
+                    <video id="timelapse-video" controls style="width: 100%; display: none; border-radius: var(--radius-sm);">
+                        Your browser does not support video playback.
+                    </video>
+                    <div id="timelapse-empty" style="color: var(--text-muted); font-size: 0.875rem;">
+                        No timelapse videos available yet — check back tomorrow.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- MICROCLIMATE TAB -->
+        <section class="tab-content" id="tab-microclimate">
+            <div class="card-grid">
+                <div class="card card--wide">
+                    <div class="card-label">Temperature</div>
+                    <div class="card-value card-value--text" id="mc-temp-interpretation">—</div>
+                    <div class="card-sub" id="mc-temp-delta">—</div>
+                </div>
+                <div class="card card--wide">
+                    <div class="card-label">Wind</div>
+                    <div class="card-value card-value--text" id="mc-wind-interpretation">—</div>
+                    <div class="card-sub" id="mc-wind-delta">—</div>
+                </div>
+                <div class="card">
+                    <div class="card-label">Tempest Temperature</div>
+                    <div class="card-value" id="mc-tempest-temp">—</div>
+                    <div class="card-unit">°C</div>
+                </div>
+                <div class="card">
+                    <div class="card-label">Model Temperature</div>
+                    <div class="card-value" id="mc-model-temp">—</div>
+                    <div class="card-unit">°C</div>
+                    <div class="card-sub">Open-Meteo regional model</div>
+                </div>
+                <div class="card">
+                    <div class="card-label">Tempest Humidity</div>
+                    <div class="card-value" id="mc-tempest-humidity">—</div>
+                    <div class="card-unit">%</div>
+                </div>
+                <div class="card">
+                    <div class="card-label">Model Humidity</div>
+                    <div class="card-value" id="mc-model-humidity">—</div>
+                    <div class="card-unit">%</div>
+                    <div class="card-sub">Open-Meteo regional model</div>
+                </div>
+                <div class="card">
+                    <div class="card-label">Tempest Wind</div>
+                    <div class="card-value" id="mc-tempest-wind">—</div>
+                    <div class="card-unit">mph</div>
+                </div>
+                <div class="card">
+                    <div class="card-label">Model Wind</div>
+                    <div class="card-value" id="mc-model-wind">—</div>
+                    <div class="card-unit">mph</div>
+                    <div class="card-sub">Open-Meteo regional model</div>
+                </div>
+                <div class="card" id="mc-uv-card">
+                    <div class="card-label">Tempest UV</div>
+                    <div class="card-value" id="mc-tempest-uv">—</div>
+                </div>
+                <div class="card" id="mc-model-uv-card">
+                    <div class="card-label">Model UV</div>
+                    <div class="card-value" id="mc-model-uv">—</div>
+                    <div class="card-sub">Open-Meteo regional model</div>
+                </div>
+                <div class="card card--wide">
+                    <div class="card-label">Model Time</div>
+                    <div class="card-value card-value--text" id="mc-model-time">—</div>
+                    <div class="card-sub">Open-Meteo data is updated hourly</div>
+                </div>
+            </div>
+        </section>
+
     </main>
 
     <script src="/static/js/dashboard.js"></script>
