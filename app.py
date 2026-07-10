@@ -5,7 +5,7 @@ import air_db
 import os
 import glob
 import datetime
-from flask import Flask, render_template, jsonify, send_file
+from flask import Flask, render_template, jsonify, send_file, request
 from pathlib import Path
 from db import (
     get_latest_observation,
