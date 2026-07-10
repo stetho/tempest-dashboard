@@ -21,6 +21,7 @@
     <nav class="tabs">
         <button class="tab-btn active" data-tab="current">Current</button>
         <button class="tab-btn" data-tab="temperature">Temperature</button>
+        <button class="tab-btn" data-tab="air">Air Quality</button>
         <button class="tab-btn" data-tab="wind">Wind</button>
         <button class="tab-btn" data-tab="pressure">Pressure</button>
         <button class="tab-btn" data-tab="solar">Solar</button>
@@ -515,6 +516,116 @@ i<!-- MICROCLIMATE TAB -->
 
     </div>
 </section>
+        <!-- AIR QUALITY TAB -->
+        <section class="tab-content" id="tab-air">
+            <div class="card-grid">
+
+                <!-- AQI -->
+                <div class="card card--large" id="air-aqi-card">
+                    <div class="card-label">Air Quality Index</div>
+                    <div class="card-value" id="air-aqi">—</div>
+                    <div class="card-sub" id="air-aqi-category">—</div>
+                </div>
+
+                <!-- UK DAQI -->
+                <div class="card card--large" id="air-daqi-card">
+                    <div class="card-label">UK Air Quality (DAQI)</div>
+                    <div class="card-value" id="air-daqi">—</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ station }} Weather Station</title>
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+    <header>
+        <div class="header-left">
+            <h1>{{ station }}</h1>
+            <span class="subtitle">Personal Weather Station</span>
+        </div>
+        <div class="header-right">
+            <span class="last-updated">Last updated: <span id="last-updated">—</span></span>
+        </div>
+    </header>
+
+    <nav class="tabs">
+        <button class="tab-btn active" data-tab="current">Current</button>
+        <button class="tab-btn" data-tab="temperature">Temperature</button>
+        <button class="tab-btn" data-tab="wind">Wind</button>
+        <button class="tab-btn" data-tab="pressure">Pressure</button>
+        <button class="tab-btn" data-tab="solar">Solar</button>
+        <button class="tab-btn" data-tab="rain">Rain</button>
+        <button class="tab-btn" data-tab="lightning">Lightning</button>
+        <button class="tab-btn" data-tab="records">Records</button>
+        <button class="tab-btn" data-tab="camera">Camera</button>
+        <button class="tab-btn" data-tab="microclimate">Microclimate</button>
+    </nav>
+<main>
+
+
+
+
+
+
+        <!-- CURRENT TAB -->
+        <section class="tab-content active" id="tab-current">
+            <div class="card-grid">
+
+                <div class="card card--large">
+                    <div class="card-label">Temperature</div>
+                    <div class="card-value" id="cur-temp">—</div>
+                    <div class="card-unit">°C</div>
+"templates/index.html" 522L, 22368B
+<!DOCTYPE html>
+                    <div class="card-sub" id="air-daqi-desc">—</div>
+                </div>
+
+                <!-- PM2.5 -->
+                <div class="card">
+                    <div class="card-label">PM2.5</div>
+                    <div class="card-value" id="air-pm25">—</div>
+                    <div class="card-unit">µg/m³</div>
+                    <div class="card-sub">Combustion &amp; organic</div>
+                </div>
+
+                <!-- PM10 -->
+                <div class="card">
+                    <div class="card-label">PM10</div>
+                    <div class="card-value" id="air-pm10">—</div>
+                    <div class="card-unit">µg/m³</div>
+                    <div class="card-sub">Dust, pollen, mould</div>
+                </div>
+
+                <!-- PM1.0 -->
+                <div class="card">
+                    <div class="card-label">PM1.0</div>
+                    <div class="card-value" id="air-pm1">—</div>
+                    <div class="card-unit">µg/m³</div>
+                    <div class="card-sub">Ultrafine particles</div>
+                </div>
+
+                <!-- Last reading -->
+                <div class="card">
+                    <div class="card-label">Last Reading</div>
+                    <div class="card-value card-value--text" id="air-timestamp">—</div>
+                </div>
+
+            </div>
+
+            <!-- PM2.5 / PM10 24h chart -->
+            <div class="chart-container">
+                <canvas id="chart-air-pm"></canvas>
+            </div>
+
+            <!-- Particle counts 24h chart -->
+            <div class="chart-container">
+                <canvas id="chart-air-particles"></canvas>
+            </div>
+
+        </section>
     </main>
 
     <script src="/static/js/dashboard.js"></script>

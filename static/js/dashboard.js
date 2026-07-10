@@ -8,6 +8,64 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     });
 });
 
+// ── Air quality ───────────────────────────────────────────────
+function daqiLabel(daqi) {
+    if (daqi <= 3)  return 'Low';
+    if (daqi <= 6)  return 'Moderate';
+    if (daqi <= 9)  return 'High';
+    return 'Very High';
+}
+
+function populateAir(d) {
+    if (!d || d.error) return;
+    set('air-aqi', d.aqi);
+    set('air-aqi-category', d.aqi_category);
+    set('air-daqi', d.daqi);
+    set('air-daqi-desc', daqiLabel(d.daqi));
+    set('air-pm25', d.pm2_5.toFixed(1));
+    set('air-pm10', d.pm10.toFixed(1));
+    set('air-pm1', d.pm1_0.toFixed(1));
+    const ts = new Date(d.timestamp);
+    set('air-timestamp', ts.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }));
+    const aqiCard = document.getElementById('air-aqi-card');
+    if (aqiCard) {
+        aqiCard.className = 'card card--large' + (d.aqi > 100 ? ' card--danger' : '');
+    }
+}
+
+function buildAirCharts(history) {
+    if (!history || history.length === 0) return;
+    const labels = history.map(o =>
+        new Date(o.timestamp).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+    );
+    ['airPm', 'airParticles'].forEach(k => {
+        if (charts[k]) { charts[k].destroy(); delete charts[k]; }
+    });
+    charts.airPm = new Chart(document.getElementById('chart-air-pm'), {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [
+                { label: 'PM2.5 (µg/m³)', data: history.map(o => o.pm2_5), borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.1)', fill: true, tension: 0.4, pointRadius: 0 },
+                { label: 'PM10 (µg/m³)', data: history.map(o => o.pm10), borderColor: '#4f9cf9', backgroundColor: 'rgba(79,156,249,0.1)', fill: true, tension: 0.4, pointRadius: 0 },
+                { label: 'PM1.0 (µg/m³)', data: history.map(o => o.pm1_0), borderColor: '#a78bfa', fill: false, tension: 0.4, pointRadius: 0 },
+            ]
+        },
+        options: { ...chartDefaults, scales: { ...chartDefaults.scales, y: { ...chartDefaults.scales.y, title: { display: true, text: 'µg/m³', color: '#64748b' } } } }
+    });
+    charts.airParticles = new Chart(document.getElementById('chart-air-particles'), {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [
+                { label: '>0.3µm (per 0.1L)', data: history.map(o => o.p03um), borderColor: '#f43f5e', backgroundColor: 'rgba(244,63,94,0.1)', fill: true, tension: 0.4, pointRadius: 0 },
+                { label: '>0.5µm (per 0.1L)', data: history.map(o => o.p05um), borderColor: '#fb923c', fill: false, tension: 0.4, pointRadius: 0 },
+                { label: '>1.0µm (per 0.1L)', data: history.map(o => o.p10um), borderColor: '#34d399', fill: false, tension: 0.4, pointRadius: 0 },
+            ]
+        },
+        options: { ...chartDefaults, scales: { ...chartDefaults.scales, y: { ...chartDefaults.scales.y, title: { display: true, text: 'particles per 0.1L', color: '#64748b' } } } }
+    });
+}
 
 // ── Helpers ───────────────────────────────────────────────────
 function set(id, value) {
@@ -481,9 +539,10 @@ function populateRecords(d) {
 }
 
 // ── Fetch and refresh ──────────────────────────────────────────
+
 async function refresh() {
     try {
-        const [current, history, rain, records, storm, microclimate, et, mlRain] = await Promise.all([
+        const [current, history, rain, records, storm, microclimate, et, mlRain, airCurrent, airHistory] = await Promise.all([
             fetch('/api/current').then(r => r.json()),
             fetch('/api/history/24h').then(r => r.json()),
             fetch('/api/rain/summary').then(r => r.json()),
@@ -492,6 +551,8 @@ async function refresh() {
             fetch('/api/microclimate').then(r => r.json()),
             fetch('/api/evapotranspiration').then(r => r.json()),
             fetch('/api/ml/rain').then(r => r.json()),
+            fetch('/api/air/current').then(r => r.ok ? r.json() : null),
+            fetch('/api/air/history/24h').then(r => r.ok ? r.json() : []),
         ]);
 
         populateStorm(storm);
@@ -502,14 +563,14 @@ async function refresh() {
         populateRecords(records);
         populateET(et);
         populateMLRain(mlRain);
-        
-        // Populate rain tab from current
+        populateAir(airCurrent);
+        buildAirCharts(airHistory);
+
         set('rain-rate', current.rain.current_rate.toFixed(1));
         set('rain-intensity', current.rain.intensity_description);
         set('rain-today', current.rain.today_total.toFixed(1));
         set('rain-yesterday', current.rain.yesterday_total.toFixed(3));
-        
-        // Refresh camera image
+
         const cameraImg = document.getElementById('camera-image');
         if (cameraImg) {
             cameraImg.src = `/camera/latest?t=${Date.now()}`;
