@@ -8,6 +8,19 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     });
 });
 
+function populateThermalStress(d) {
+    if (!d || d.error) return;
+    const card = document.getElementById('thermal-stress-card');
+    set('cur-thermal-stress', `${d.category} · WBGT ${d.wbgt}°C`);
+    set('cur-thermal-stress-advice', d.advice);
+    card.className = 'card card--wide';
+    if (d.risk_level === 'Extreme') {
+        card.classList.add('card--danger');
+    } else if (d.risk_level === 'Very High' || d.risk_level === 'High') {
+        card.classList.add('card--warning');
+    }
+}
+
 // –– Heatwave ––––––––––––––––––––––––––––––––––––––––––––––––––
 
 function populateHeatwave(d) {
@@ -562,7 +575,7 @@ function populateRecords(d) {
 
 async function refresh() {
     try {
-        const [current, history, heatwave, rain, records, storm, microclimate, et, mlRain, airCurrent, airHistory] = await Promise.all([
+        const [current, history, heatwave, rain, records, storm, microclimate, et, mlRain, airCurrent, airHistory, thermalStress] = await Promise.all([
             fetch('/api/current').then(r => r.json()),
             fetch('/api/history/24h').then(r => r.json()),
             fetch('/api/heatwave').then(r => r.ok ? r.json() : null),
@@ -574,6 +587,7 @@ async function refresh() {
             fetch('/api/ml/rain').then(r => r.json()),
             fetch('/api/air/current').then(r => r.ok ? r.json() : null),
             fetch('/api/air/history/24h').then(r => r.ok ? r.json() : []),
+            fetch('/api/thermal-stress').then(r => r.ok ? r.json() : null),
         ]);
 
         populateStorm(storm);
@@ -587,6 +601,7 @@ async function refresh() {
         populateAir(airCurrent);
         populateHeatwave(heatwave);
         buildAirCharts(airHistory);
+        populateThermalStress(thermalStress);
 
         set('rain-rate', current.rain.current_rate.toFixed(1));
         set('rain-intensity', current.rain.intensity_description);

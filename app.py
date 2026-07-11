@@ -19,7 +19,7 @@ from functools import wraps
 from analytics.pressure import pressure_change_rate, zambretti_forecast, storm_predictor
 from analytics.wind import beaufort_scale, gust_factor, wind_direction_compass
 from analytics.solar import clear_sky_index, uv_dose_accumulator
-from analytics.temperature import absolute_humidity, frost_risk, thermal_comfort
+from analytics.temperature import absolute_humidity, frost_risk, thermal_comfort, thermal_stress
 from analytics.rain import rain_intensity, spell_tracker, antecedent_rainfall_index
 from analytics.lightning import lightning_safety
 from analytics.records import get_all_time_records, get_daily_records, get_station_info
@@ -252,6 +252,17 @@ def build_current_conditions(obs: dict, pressure_obs: list[dict]) -> dict:
 @app.route("/")
 def index():
     return render_template("index.html", station=STATION_NAME)
+
+@app.route("/api/thermal-stress")
+def api_thermal_stress():
+    obs = get_latest_observation()
+    if not obs:
+        return jsonify({"error": "No observations found"}), 404
+    wbgt = obs.get("wet_bulb_globe_temperature")
+    if wbgt is None:
+        return jsonify({"error": "WBGT data not available"}), 404
+    result = thermal_stress(wbgt)
+    return jsonify(result)
 
 @app.route("/api/heatwave")
 def api_heatwave():
