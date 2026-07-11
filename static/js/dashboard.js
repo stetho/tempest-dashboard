@@ -8,6 +8,30 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     });
 });
 
+// –– Pollen ––––––––––––––––––––––––––––––––––––––––––––––––––––
+function populatePollen(d) {
+    if (!d || d.error) return;
+    const card = document.getElementById('pollen-card');
+    card.className = 'card card--wide';
+
+    // Headline
+    set('cur-pollen', `${d.overall_category} pollen risk`);
+
+    // Build detail line from in-season pollens only
+    const details = [];
+    if (d.grass.in_season)  details.push(`Grass: ${d.grass.category} (${d.grass.current} g/m³)`);
+    if (d.birch.in_season)  details.push(`Birch: ${d.birch.category} (${d.birch.current} g/m³)`);
+    if (d.alder.in_season)  details.push(`Alder: ${d.alder.category} (${d.alder.current} g/m³)`);
+    set('cur-pollen-detail', details.length ? details.join(' · ') : 'No pollen season active');
+
+    // Colour card by risk
+    if (d.overall_risk === 'very-high' || d.overall_risk === 'high') {
+        card.classList.add('card--danger');
+    } else if (d.overall_risk === 'moderate') {
+        card.classList.add('card--warning');
+    }
+}
+
 // –– UV Exposure –––––––––––––––––––––––––––––––––––––––––––––––
 function populateUVExposure(d) {
     if (!d || d.error) return;
@@ -613,7 +637,7 @@ function populateRecords(d) {
 
 async function refresh() {
     try {
-        const [current, history, heatwave, rain, records, storm, microclimate, et, mlRain, airCurrent, airHistory, thermalStress, dispersion, uvExposure] = await Promise.all([
+        const [current, history, heatwave, rain, records, storm, microclimate, et, mlRain, airCurrent, airHistory, thermalStress, dispersion, uvExposure, pollen] = await Promise.all([
             fetch('/api/current').then(r => r.json()),
             fetch('/api/history/24h').then(r => r.json()),
             fetch('/api/heatwave').then(r => r.ok ? r.json() : null),
@@ -628,6 +652,7 @@ async function refresh() {
             fetch('/api/thermal-stress').then(r => r.ok ? r.json() : null),
             fetch('/api/dispersion').then(r => r.ok ? r.json() : null),
             fetch('/api/uv-exposure').then(r => r.ok ? r.json() : null),
+            fetch('/api/pollen').then(r => r.ok ? r.json() : null),
         ]);
 
         populateStorm(storm);
@@ -644,6 +669,7 @@ async function refresh() {
         populateThermalStress(thermalStress);
         populateDispersion(dispersion);
         populateUVExposure(uvExposure);
+        populatePollen(pollen);
 
         set('rain-rate', current.rain.current_rate.toFixed(1));
         set('rain-intensity', current.rain.intensity_description);

@@ -17,6 +17,7 @@ from db import (
 )
 from functools import wraps
 from analytics.pressure import pressure_change_rate, zambretti_forecast, storm_predictor
+from analytics.pollen import fetch_pollen
 from analytics.wind import beaufort_scale, gust_factor, wind_direction_compass
 from analytics.solar import clear_sky_index, uv_dose_accumulator
 from analytics.temperature import absolute_humidity, frost_risk, thermal_comfort, thermal_stress
@@ -257,6 +258,14 @@ def build_current_conditions(obs: dict, pressure_obs: list[dict]) -> dict:
 @app.route("/")
 def index():
     return render_template("index.html", station=STATION_NAME)
+
+@app.route("/api/pollen")
+def api_pollen():
+    try:
+        result = fetch_pollen(LATITUDE, LONGITUDE)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/api/uv-exposure")
 def api_uv_exposure():
