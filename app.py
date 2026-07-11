@@ -27,7 +27,7 @@ from analytics.microclimate import fetch_open_meteo, compare_microclimate
 from analytics.evapotranspiration import penman_monteith_et
 from analytics.ml import NaiveBayesRainPredictor, build_training_dataframe, predict_from_observation
 from analytics.heatwave import heatwave_status
-
+from analytics.air_quality import dispersion_index
 
 
 app = Flask(__name__)
@@ -257,6 +257,19 @@ def build_current_conditions(obs: dict, pressure_obs: list[dict]) -> dict:
 @app.route("/")
 def index():
     return render_template("index.html", station=STATION_NAME)
+
+@app.route("/api/dispersion")
+def api_dispersion():
+    obs = get_latest_observation()
+    if not obs:
+        return jsonify({"error": "No observations found"}), 404
+    result = dispersion_index(
+        wind_avg=obs["wind_avg"],
+        delta_t=obs.get("delta_t", 0.0),
+        sea_level_pressure=obs["sea_level_pressure"],
+        precip=obs["precip"],
+    )
+    return jsonify(result)
 
 @app.route("/api/thermal-stress")
 def api_thermal_stress():

@@ -21,6 +21,20 @@ function populateThermalStress(d) {
     }
 }
 
+// –– Polution Dispersal ––––––––––––––––––––––––––––––––––––––––
+
+function populateDispersion(d) {
+    if (!d || d.error) return;
+    const card = document.getElementById('dispersion-card');
+    set('air-dispersion', `${d.rating} · Score ${d.score}/10`);
+    set('air-dispersion-desc', d.description);
+    set('air-dispersion-factors', d.factors.join(' · '));
+    card.className = 'card card--wide';
+    if (d.rating === 'Very Poor' || d.rating === 'Poor') {
+        card.classList.add('card--warning');
+    }
+}
+
 // –– Heatwave ––––––––––––––––––––––––––––––––––––––––––––––––––
 
 function populateHeatwave(d) {
@@ -576,7 +590,7 @@ function populateRecords(d) {
 
 async function refresh() {
     try {
-        const [current, history, heatwave, rain, records, storm, microclimate, et, mlRain, airCurrent, airHistory, thermalStress] = await Promise.all([
+        const [current, history, heatwave, rain, records, storm, microclimate, et, mlRain, airCurrent, airHistory, thermalStress, dispersion] = await Promise.all([
             fetch('/api/current').then(r => r.json()),
             fetch('/api/history/24h').then(r => r.json()),
             fetch('/api/heatwave').then(r => r.ok ? r.json() : null),
@@ -589,6 +603,7 @@ async function refresh() {
             fetch('/api/air/current').then(r => r.ok ? r.json() : null),
             fetch('/api/air/history/24h').then(r => r.ok ? r.json() : []),
             fetch('/api/thermal-stress').then(r => r.ok ? r.json() : null),
+            fetch('/api/dispersion').then(r => r.ok ? r.json() : null),
         ]);
 
         populateStorm(storm);
@@ -603,6 +618,7 @@ async function refresh() {
         populateHeatwave(heatwave);
         buildAirCharts(airHistory);
         populateThermalStress(thermalStress);
+        populateDispersion(dispersion);
 
         set('rain-rate', current.rain.current_rate.toFixed(1));
         set('rain-intensity', current.rain.intensity_description);
