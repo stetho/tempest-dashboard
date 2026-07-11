@@ -219,7 +219,8 @@ function populateCurrent(d) {
 
     // Current tab
     set('cur-temp', d.temperature.air);
-    set('cur-feels-like', `Feels like ${d.temperature.feels_like}°C`);
+    const feelsFactor = d.temperature.feels_like_factor ? ` (${d.temperature.feels_like_factor})` : '';
+    set('cur-feels-like', `Feels like ${d.temperature.feels_like}°C${feelsFactor}`);
     set('cur-humidity', d.humidity.relative);
     set('cur-humidity-desc', d.temperature.humidity_description);
     set('cur-wind', d.wind.avg);

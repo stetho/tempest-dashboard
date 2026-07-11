@@ -183,6 +183,11 @@ def build_current_conditions(obs: dict, pressure_obs: list[dict]) -> dict:
         "temperature": {
             "air": obs["air_temperature"],
             "feels_like": obs["feels_like"],
+            "feels_like_factor": (
+                "heat index" if obs.get("heat_index", obs["feels_like"]) > obs["air_temperature"] + 1
+                 else "wind chill" if obs.get("wind_chill", obs["feels_like"]) < obs["air_temperature"] - 1
+                 else None
+            ),
             "dew_point": obs["dew_point"],
             "wet_bulb": obs["wet_bulb_temperature"],
             "absolute_humidity": abs_hum["absolute_humidity_g_m3"],
