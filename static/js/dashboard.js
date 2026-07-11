@@ -8,6 +8,21 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     });
 });
 
+// –– Comfort ––––––––––––––––––––––––––––––––––––––––––––––––––
+function populateComfort(d) {
+    if (!d || d.error) return;
+    const card = document.getElementById('comfort-card');
+    set('cur-comfort-score', `${d.label} · ${d.score}/10`);
+    set('cur-comfort-desc', d.description);
+    set('cur-comfort-factors', d.factors.join(' · '));
+    card.className = 'card card--wide';
+    if (d.score < 3.0) {
+        card.classList.add('card--danger');
+    } else if (d.score < 4.5) {
+        card.classList.add('card--warning');
+    }
+}
+
 // –– Solar Energy ––––––––––––––––––––––––––––––––––––––––––––––
 
 function populateSolarEnergy(d) {
@@ -646,7 +661,7 @@ function populateRecords(d) {
 
 async function refresh() {
     try {
-        const [current, history, heatwave, rain, records, storm, microclimate, et, mlRain, airCurrent, airHistory, thermalStress, dispersion, uvExposure, pollen, solarEnergy] = await Promise.all([
+        const [current, history, heatwave, rain, records, storm, microclimate, et, mlRain, airCurrent, airHistory, thermalStress, dispersion, uvExposure, pollen, solarEnergy, comfort] = await Promise.all([
             fetch('/api/current').then(r => r.json()),
             fetch('/api/history/24h').then(r => r.json()),
             fetch('/api/heatwave').then(r => r.ok ? r.json() : null),
@@ -663,6 +678,7 @@ async function refresh() {
             fetch('/api/uv-exposure').then(r => r.ok ? r.json() : null),
             fetch('/api/pollen').then(r => r.ok ? r.json() : null),
             fetch('/api/solar-energy').then(r => r.ok ? r.json() : null),
+            fetch('/api/comfort').then(r => r.ok ? r.json() : null),
         ]);
 
         populateStorm(storm);
@@ -681,6 +697,7 @@ async function refresh() {
         populateUVExposure(uvExposure);
         populatePollen(pollen);
         populateSolarEnergy(solarEnergy);
+        populateComfort(comfort);
 
         set('rain-rate', current.rain.current_rate.toFixed(1));
         set('rain-intensity', current.rain.intensity_description);
