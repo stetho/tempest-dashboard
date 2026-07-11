@@ -8,6 +8,15 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     });
 });
 
+// –– Solar Energy ––––––––––––––––––––––––––––––––––––––––––––––
+
+function populateSolarEnergy(d) {
+    if (!d || d.error) return;
+    set('sol-energy-kwh', `${d.kwh_m2_today} kWh/m² · ${d.description}`);
+    set('sol-energy-peak', `Peak: ${d.peak_w_m2} W/m²`);
+    set('sol-energy-context', d.context);
+}
+
 // –– Pollen ––––––––––––––––––––––––––––––––––––––––––––––––––––
 function populatePollen(d) {
     if (!d || d.error) return;
@@ -637,7 +646,7 @@ function populateRecords(d) {
 
 async function refresh() {
     try {
-        const [current, history, heatwave, rain, records, storm, microclimate, et, mlRain, airCurrent, airHistory, thermalStress, dispersion, uvExposure, pollen] = await Promise.all([
+        const [current, history, heatwave, rain, records, storm, microclimate, et, mlRain, airCurrent, airHistory, thermalStress, dispersion, uvExposure, pollen, solarEnergy] = await Promise.all([
             fetch('/api/current').then(r => r.json()),
             fetch('/api/history/24h').then(r => r.json()),
             fetch('/api/heatwave').then(r => r.ok ? r.json() : null),
@@ -653,6 +662,7 @@ async function refresh() {
             fetch('/api/dispersion').then(r => r.ok ? r.json() : null),
             fetch('/api/uv-exposure').then(r => r.ok ? r.json() : null),
             fetch('/api/pollen').then(r => r.ok ? r.json() : null),
+            fetch('/api/solar-energy').then(r => r.ok ? r.json() : null),
         ]);
 
         populateStorm(storm);
@@ -670,6 +680,7 @@ async function refresh() {
         populateDispersion(dispersion);
         populateUVExposure(uvExposure);
         populatePollen(pollen);
+        populateSolarEnergy(solarEnergy);
 
         set('rain-rate', current.rain.current_rate.toFixed(1));
         set('rain-intensity', current.rain.intensity_description);

@@ -30,6 +30,8 @@ from analytics.ml import NaiveBayesRainPredictor, build_training_dataframe, pred
 from analytics.heatwave import heatwave_status
 from analytics.air_quality import dispersion_index
 from analytics.uv import calculate_uv_dose
+from analytics.solar import clear_sky_index, uv_dose_accumulator, solar_energy_potential
+
 
 app = Flask(__name__)
 air_db.init_db()
@@ -258,6 +260,20 @@ def build_current_conditions(obs: dict, pressure_obs: list[dict]) -> dict:
 @app.route("/")
 def index():
     return render_template("index.html", station=STATION_NAME)
+
+@app.route("/api/solar-energy")
+def api_solar_energy():
+    poll_interval = int(os.getenv("POLL_INTERVAL_SECONDS", "600"))
+    with get_connection() as conn:
+        rows = conn.execute("""
+            SELECT solar_radiation
+            FROM observations
+            WHERE date(timestamp, 'unixepoch') = date('now')
+            ORDER BY timestamp ASC
+        """).fetchall()
+    obs = [dict(row) for row in rows]
+    result = solar_energy_potential(obs, poll_interval)
+    return jsonify(result)
 
 @app.route("/api/pollen")
 def api_pollen():
