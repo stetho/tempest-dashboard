@@ -28,7 +28,7 @@ from analytics.evapotranspiration import penman_monteith_et
 from analytics.ml import NaiveBayesRainPredictor, build_training_dataframe, predict_from_observation
 from analytics.heatwave import heatwave_status
 from analytics.air_quality import dispersion_index
-
+from analytics.uv import calculate_uv_dose
 
 app = Flask(__name__)
 air_db.init_db()
@@ -257,6 +257,21 @@ def build_current_conditions(obs: dict, pressure_obs: list[dict]) -> dict:
 @app.route("/")
 def index():
     return render_template("index.html", station=STATION_NAME)
+
+@app.route("/api/uv-exposure")
+def api_uv_exposure():
+    """Calculate today's cumulative UV dose and burn time estimates."""
+    with get_connection() as conn:
+        rows = conn.execute("""
+            SELECT timestamp, uv
+            FROM observations
+            WHERE date(timestamp, 'unixepoch') = date('now')
+            ORDER BY timestamp ASC
+        """).fetchall()
+    obs = [dict(row) for row in rows]
+    poll_interval = int(os.getenv("POLL_INTERVAL_SECONDS", "600"))
+    result = calculate_uv_dose(obs, poll_interval)
+    return jsonify(result)
 
 @app.route("/api/dispersion")
 def api_dispersion():

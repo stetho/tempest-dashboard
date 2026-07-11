@@ -299,6 +299,37 @@
                     <div class="card-value card-value--text" id="sol-sky">—</div>
                     <div class="card-sub" id="sol-csi">Clear sky index: —</div>
                 </div>
+                <div class="card card--wide" id="uv-exposure-card">
+                    <div class="card-label">UV Exposure Today</div>
+                    <div class="card-value card-value--text" id="sol-uv-dose">—</div>
+                    <div class="card-sub" id="sol-uv-peak">—</div>
+                    <table id="sol-uv-skin-table" style="width:100%; margin-top:0.75rem; font-size:0.8rem; border-collapse:collapse;">
+                        <tr style="color: var(--text-muted);">
+                            <th style="text-align:left; padding: 0.2rem 0;">Skin Type</th>
+                            <th style="text-align:right; padding: 0.2rem 0;">Used</th>
+                            <th style="text-align:right; padding: 0.2rem 0;">Time to burn</th>
+                            <th style="text-align:right; padding: 0.2rem 0;">Status</th>
+                        </tr>
+                        <tr id="sol-uv-row-I">
+                            <td style="padding: 0.2rem 0; color: var(--text-sub);">Type I (very fair)</td>
+                            <td style="text-align:right; color: var(--text-sub);" id="sol-uv-pct-I">—</td>
+                            <td style="text-align:right; color: var(--text-sub);" id="sol-uv-burn-I">—</td>
+                            <td style="text-align:right;" id="sol-uv-status-I">—</td>
+                        </tr>
+                        <tr id="sol-uv-row-II">
+                            <td style="padding: 0.2rem 0; color: var(--text-sub);">Type II (fair)</td>
+                            <td style="text-align:right; color: var(--text-sub);" id="sol-uv-pct-II">—</td>
+                            <td style="text-align:right; color: var(--text-sub);" id="sol-uv-burn-II">—</td>
+                            <td style=" text-align:right;" id="sol-uv-status-II">—</td>
+                        </tr>
+                        <tr id="sol-uv-row-III">
+                            <td style="padding: 0.2rem 0; color: var(--text-sub);">Type III (medium)</td>
+                            <td style="text-align:right; color: var(--text-sub);" id="sol-uv-pct-III">—</td>
+                            <td style="text-align:right; color: var(--text-sub);" id="sol-uv-burn-III">—</td>
+                            <td style="text-align:right;" id="sol-uv-status-III">—</td>
+                        </tr>
+                    </table>
+                </div>
             </div>
             <div class="chart-container">
                 <canvas id="chart-solar"></canvas>

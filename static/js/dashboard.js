@@ -8,6 +8,29 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     });
 });
 
+// –– UV Exposure –––––––––––––––––––––––––––––––––––––––––––––––
+function populateUVExposure(d) {
+    if (!d || d.error) return;
+    set('sol-uv-dose', `${d.sed_today} SED accumulated · Peak UV: ${d.peak_uv}`);
+    set('sol-uv-peak', `Current UV index: ${d.current_uv}`);
+    d.skin_types.forEach(skin => {
+        const k = skin.key;
+        set(`sol-uv-pct-${k}`, `${skin.percent_used}%`);
+        set(`sol-uv-burn-${k}`,
+            skin.minutes_to_burn !== null ? `${skin.minutes_to_burn} min` : 'No burn risk'
+        );
+        const statusEl = document.getElementById(`sol-uv-status-${k}`);
+        if (statusEl) {
+            statusEl.textContent = skin.status;
+            statusEl.style.color =
+                skin.risk === 'danger'   ? 'var(--danger)'  :
+                skin.risk === 'warning'  ? 'var(--warning)' :
+                skin.risk === 'moderate' ? 'var(--warning)' :
+                'var(--success)';
+        }
+    });
+}
+
 function populateThermalStress(d) {
     if (!d || d.error) return;
     const card = document.getElementById('thermal-stress-card');
@@ -590,7 +613,7 @@ function populateRecords(d) {
 
 async function refresh() {
     try {
-        const [current, history, heatwave, rain, records, storm, microclimate, et, mlRain, airCurrent, airHistory, thermalStress, dispersion] = await Promise.all([
+        const [current, history, heatwave, rain, records, storm, microclimate, et, mlRain, airCurrent, airHistory, thermalStress, dispersion, uvExposure] = await Promise.all([
             fetch('/api/current').then(r => r.json()),
             fetch('/api/history/24h').then(r => r.json()),
             fetch('/api/heatwave').then(r => r.ok ? r.json() : null),
@@ -604,6 +627,7 @@ async function refresh() {
             fetch('/api/air/history/24h').then(r => r.ok ? r.json() : []),
             fetch('/api/thermal-stress').then(r => r.ok ? r.json() : null),
             fetch('/api/dispersion').then(r => r.ok ? r.json() : null),
+            fetch('/api/uv-exposure').then(r => r.ok ? r.json() : null),
         ]);
 
         populateStorm(storm);
@@ -619,6 +643,7 @@ async function refresh() {
         buildAirCharts(airHistory);
         populateThermalStress(thermalStress);
         populateDispersion(dispersion);
+        populateUVExposure(uvExposure);
 
         set('rain-rate', current.rain.current_rate.toFixed(1));
         set('rain-intensity', current.rain.intensity_description);
