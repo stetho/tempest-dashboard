@@ -55,8 +55,8 @@ def get_utc_offset(timestamp: int) -> float:
     BST (UTC+1) runs from the last Sunday in March to the last Sunday in October.
     """
     import datetime
-    dt = datetime.datetime.fromtimestamp(timestamp, datetime.UTC)
-    
+    dt = datetime.datetime.utcfromtimestamp(timestamp)
+ 
     # Find last Sunday in March
     march = datetime.datetime(dt.year, 3, 31)
     bst_start = march - datetime.timedelta(days=march.weekday() + 1)
