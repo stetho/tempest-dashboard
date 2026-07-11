@@ -262,6 +262,25 @@ def build_current_conditions(obs: dict, pressure_obs: list[dict]) -> dict:
 def index():
     return render_template("index.html", station=STATION_NAME)
 
+@app.route("/api/comfort")
+def api_comfort():
+    obs = get_latest_observation()
+    if not obs:
+        return jsonify({"error": "No observations found"}), 404
+    try:
+        pollen = fetch_pollen(LATITUDE, LONGITUDE)
+        pollen_risk = pollen.get("overall_risk", "low")
+    except Exception:
+        pollen_risk = "low"
+    result = outdoor_comfort_score(
+        air_temperature=obs["air_temperature"],
+        relative_humidity=obs["relative_humidity"],
+        wind_avg=obs["wind_avg"],
+        uv=obs["uv"],
+        pollen_risk=pollen_risk,
+    )
+    return jsonify(result)
+
 @app.route("/api/solar-energy")
 def api_solar_energy():
     poll_interval = int(os.getenv("POLL_INTERVAL_SECONDS", "600"))
