@@ -55,7 +55,7 @@ def get_utc_offset(timestamp: int) -> float:
     BST (UTC+1) runs from the last Sunday in March to the last Sunday in October.
     """
     import datetime
-    dt = datetime.datetime.utcfromtimestamp(timestamp)
+    dt = datetime.datetime.fromtimestamp(timestamp, datetime.UTC)
     
     # Find last Sunday in March
     march = datetime.datetime(dt.year, 3, 31)
@@ -100,7 +100,7 @@ def build_current_conditions(obs: dict, pressure_obs: list[dict]) -> dict:
     Combine a raw observation with analytics to produce a full
     current conditions payload.
     """
-    now = datetime.datetime.utcfromtimestamp(obs["timestamp"])
+    now = datetime.datetime.fromtimestamp(obs["timestamp"], datetime.UTC)
     utc_offset = get_utc_offset(obs["timestamp"])
 
     # Pressure
@@ -320,7 +320,7 @@ def api_ha():
             return jsonify({"error": "No observations found"}), 404
 
         pressure_obs = get_pressure_last_3h()
-        now = datetime.datetime.utcnow()
+        now = datetime.datetime.now(datetime.UTC)
 
         # Use build_current_conditions to get everything already calculated
         conditions = build_current_conditions(obs, pressure_obs)
@@ -359,7 +359,7 @@ def api_ha():
         except Exception:
             pass
 
-        timestamp = datetime.datetime.utcfromtimestamp(obs["timestamp"]).strftime(
+        timestamp = datetime.datetime.fromtimestamp(obs["timestamp"], datetime.UTC).strftime(
             "%Y-%m-%dT%H:%M:%SZ"
         )
 
