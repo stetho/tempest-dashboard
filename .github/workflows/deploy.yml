@@ -26,6 +26,7 @@ jobs:
           context: .
           push: true
           tags: registry.stetho.me/stetho/tempest-dashboard:latest
+          no-cache: true
 
       - name: Trigger deployment
         run: |
