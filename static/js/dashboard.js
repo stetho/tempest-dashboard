@@ -704,6 +704,7 @@ async function refresh() {
         set('rain-today', current.rain.today_total.toFixed(1));
         set('rain-yesterday', current.rain.yesterday_total.toFixed(3));
         set('rain-duration', current.rain.precip_minutes_today ?? '0');
+        set('rain-last-1hr', current.rain.last_1hr.toFixed(1));
         set('rain-duration-desc', current.rain.precip_minutes_today > 0 
             ? `${current.rain.today_total.toFixed(1)}mm over ${current.rain.precip_minutes_today} minutes`
             : 'No rain recorded today');

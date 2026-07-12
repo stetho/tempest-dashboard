@@ -241,6 +241,7 @@ def build_current_conditions(obs: dict, pressure_obs: list[dict]) -> dict:
             "today_total": round(obs["precip_accum_local_day"], 2),
             "yesterday_total": round(obs["precip_accum_local_yesterday"], 2),
             "precip_minutes_today": obs.get("precip_minutes_local_day", 0),
+            "last_1hr": round(obs.get("precip_accum_last_1hr", 0.0) or 0.0, 2),
         },
 
         "lightning": {
