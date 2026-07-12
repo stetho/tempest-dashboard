@@ -30,7 +30,7 @@ from analytics.evapotranspiration import penman_monteith_et
 from analytics.ml import NaiveBayesRainPredictor, build_training_dataframe, predict_from_observation
 from analytics.heatwave import heatwave_status
 from analytics.air_quality import dispersion_index
-from analytics.uv import calculate_uv_dose
+from analytics.uv import calculate_uv_dose, fetch_uv_forecast
 from analytics.solar import clear_sky_index, uv_dose_accumulator, solar_energy_potential
 
 
@@ -263,6 +263,14 @@ def build_current_conditions(obs: dict, pressure_obs: list[dict]) -> dict:
 @app.route("/")
 def index():
     return render_template("index.html", station=STATION_NAME)
+
+@app.route("/api/uv-forecast")
+def api_uv_forecast():
+    try:
+        result = fetch_uv_forecast(LATITUDE, LONGITUDE)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/api/wind/rose")
 def api_wind_rose():

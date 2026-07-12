@@ -8,6 +8,52 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     });
 });
 
+// –– UV Forecast –––––––––––––––––––––––––––––––––––––––––––––
+
+function buildUVForecastChart(data) {
+    if (!data || data.error || data.length === 0) return;
+    if (charts.uvForecast) { charts.uvForecast.destroy(); delete charts.uvForecast; }
+
+    const labels = data.map(o => o.time.slice(11, 16)); // HH:MM
+    const values = data.map(o => o.uv_index);
+
+    charts.uvForecast = new Chart(document.getElementById('chart-uv-forecast'), {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [{
+                label: 'UV Index Forecast',
+                data: values,
+                backgroundColor: values.map(v =>
+                    v >= 8  ? 'rgba(239,68,68,0.7)'   :
+                    v >= 6  ? 'rgba(245,158,11,0.7)'  :
+                    v >= 3  ? 'rgba(79,156,249,0.7)'  :
+                    'rgba(52,211,153,0.7)'
+                ),
+                borderColor: values.map(v =>
+                    v >= 8  ? '#ef4444' :
+                    v >= 6  ? '#f59e0b' :
+                    v >= 3  ? '#4f9cf9' :
+                    '#34d399'
+                ),
+                borderWidth: 1,
+                borderRadius: 3,
+            }]
+        },
+        options: {
+            ...chartDefaults,
+            scales: {
+                ...chartDefaults.scales,
+                y: {
+                    ...chartDefaults.scales.y,
+                    min: 0,
+                    title: { display: true, text: 'UV Index', color: '#64748b' }
+                }
+            }
+        }
+    });
+}
+
 // –– Wind Rose –––––––––––––––––––––––––––––––––––––––––––––––
 
 function buildWindRose(data) {
@@ -806,7 +852,7 @@ function populateRecords(d) {
 
 async function refresh() {
     try {
-        const [current, history, heatwave, rain, records, storm, microclimate, et, mlRain, airCurrent, airHistory, thermalStress, dispersion, uvExposure, pollen, solarEnergy, comfort, windRose] = await Promise.all([
+        const [current, history, heatwave, rain, records, storm, microclimate, et, mlRain, airCurrent, airHistory, thermalStress, dispersion, uvExposure, pollen, solarEnergy, comfort, windRose, uvForecast] = await Promise.all([
             fetch('/api/current').then(r => r.json()),
             fetch('/api/history/24h').then(r => r.json()),
             fetch('/api/heatwave').then(r => r.ok ? r.json() : null),
@@ -825,6 +871,7 @@ async function refresh() {
             fetch('/api/solar-energy').then(r => r.ok ? r.json() : null),
             fetch('/api/comfort').then(r => r.ok ? r.json() : null),
             fetch('/api/wind/rose').then(r => r.ok ? r.json() : null),
+            fetch('/api/uv-forecast').then(r => r.ok ? r.json() : null),
         ]);
 
         populateStorm(storm);
@@ -845,6 +892,7 @@ async function refresh() {
         populateSolarEnergy(solarEnergy);
         populateComfort(comfort);
         buildWindRose(windRose);
+        buildUVForecastChart(uvForecast);
 
         set('rain-rate', current.rain.current_rate.toFixed(1));
         set('rain-intensity', current.rain.intensity_description);
