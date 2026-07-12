@@ -8,6 +8,25 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     });
 });
 
+// –– Fog Warning –––––––––––––––––––––––––––––––––––––––––––––
+
+function populateFog(d) {
+    if (!d || d.error) return;
+    const card = document.getElementById('fog-card');
+    card.className = 'card card--wide';
+
+    const current = d.current;
+    const tonight = d.tonight;
+
+    set('cur-fog-current', `Now: ${current.description}`);
+    set('cur-fog-tonight', `Tonight: ${tonight.description} (${tonight.probability}% probability)`);
+    set('cur-fog-factors', tonight.factors.join(' · '));
+
+    if (current.risk_level === 'High' || tonight.risk_level === 'High') {
+        card.classList.add('card--warning');
+    }
+}
+
 // –– UV Forecast –––––––––––––––––––––––––––––––––––––––––––––
 
 function buildUVForecastChart(data) {
@@ -852,7 +871,7 @@ function populateRecords(d) {
 
 async function refresh() {
     try {
-        const [current, history, heatwave, rain, records, storm, microclimate, et, mlRain, airCurrent, airHistory, thermalStress, dispersion, uvExposure, pollen, solarEnergy, comfort, windRose, uvForecast] = await Promise.all([
+        const [current, history, heatwave, rain, records, storm, microclimate, et, mlRain, airCurrent, airHistory, thermalStress, dispersion, uvExposure, pollen, solarEnergy, comfort, windRose, uvForecast, fog] = await Promise.all([
             fetch('/api/current').then(r => r.json()),
             fetch('/api/history/24h').then(r => r.json()),
             fetch('/api/heatwave').then(r => r.ok ? r.json() : null),
@@ -872,6 +891,7 @@ async function refresh() {
             fetch('/api/comfort').then(r => r.ok ? r.json() : null),
             fetch('/api/wind/rose').then(r => r.ok ? r.json() : null),
             fetch('/api/uv-forecast').then(r => r.ok ? r.json() : null),
+            fetch('/api/fog').then(r => r.ok ? r.json() : null),
         ]);
 
         populateStorm(storm);
@@ -893,6 +913,7 @@ async function refresh() {
         populateComfort(comfort);
         buildWindRose(windRose);
         buildUVForecastChart(uvForecast);
+        populateFog(fog);
 
         set('rain-rate', current.rain.current_rate.toFixed(1));
         set('rain-intensity', current.rain.intensity_description);

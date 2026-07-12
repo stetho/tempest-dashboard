@@ -17,6 +17,7 @@ from db import (
 )
 from functools import wraps
 from analytics.pressure import pressure_change_rate, zambretti_forecast, storm_predictor
+from analytics.fog import current_fog_risk, tonight_fog_forecast
 from analytics.comfort import outdoor_comfort_score
 from analytics.pollen import fetch_pollen
 from analytics.wind import beaufort_scale, gust_factor, wind_direction_compass
@@ -263,6 +264,32 @@ def build_current_conditions(obs: dict, pressure_obs: list[dict]) -> dict:
 @app.route("/")
 def index():
     return render_template("index.html", station=STATION_NAME)
+
+@app.route("/api/fog")
+def api_fog():
+    obs = get_latest_observation()
+    if not obs:
+        return jsonify({"error": "No observations found"}), 404
+    now = datetime.datetime.fromtimestamp(obs["timestamp"], datetime.UTC)
+    utc_offset = get_utc_offset(obs["timestamp"])
+    local_hour = (now.hour + int(utc_offset)) % 24
+    current = current_fog_risk(
+        air_temperature=obs["air_temperature"],
+        dew_point=obs["dew_point"],
+        relative_humidity=obs["relative_humidity"],
+        wind_avg=obs["wind_avg"],
+        solar_radiation=obs["solar_radiation"],
+        hour=local_hour,
+    )
+    tonight = tonight_fog_forecast(
+        relative_humidity=obs["relative_humidity"],
+        dew_point=obs["dew_point"],
+        air_temperature=obs["air_temperature"],
+        sea_level_pressure=obs["sea_level_pressure"],
+        wind_avg=obs["wind_avg"],
+        solar_radiation=obs["solar_radiation"],
+    )
+    return jsonify({"current": current, "tonight": tonight})
 
 @app.route("/api/uv-forecast")
 def api_uv_forecast():
