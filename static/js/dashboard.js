@@ -8,6 +8,151 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     });
 });
 
+// –– Wind Rose –––––––––––––––––––––––––––––––––––––––––––––––
+
+function buildWindRose(data) {
+    if (!data || !data.buckets) return;
+
+    const svg = document.getElementById('wind-rose-svg');
+    if (!svg) return;
+
+    // Clear previous render
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+
+    const cx = 200, cy = 200;
+    const maxRadius = 160;
+    const buckets = data.buckets;
+    const maxFreq = Math.max(...buckets.map(b => b.frequency));
+
+    // Speed colour scale — matches dashboard palette
+    function speedColour(speed) {
+        if (speed >= 15) return '#ef4444';      // danger red
+        if (speed >= 8)  return '#f59e0b';      // warning amber
+        if (speed >= 4)  return '#4f9cf9';      // accent blue
+        return '#34d399';                        // calm green
+    }
+
+    // Draw concentric reference rings (25%, 50%, 75%, 100%)
+    [0.25, 0.5, 0.75, 1.0].forEach(pct => {
+        const r = maxRadius * pct;
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', cx);
+        circle.setAttribute('cy', cy);
+        circle.setAttribute('r', r);
+        circle.setAttribute('fill', 'none');
+        circle.setAttribute('stroke', '#2a2d3e');
+        circle.setAttribute('stroke-width', '1');
+        svg.appendChild(circle);
+
+        // Ring label
+        const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        label.setAttribute('x', cx + 4);
+        label.setAttribute('y', cy - r + 12);
+        label.setAttribute('fill', '#64748b');
+        label.setAttribute('font-size', '9');
+        label.textContent = `${Math.round(maxFreq * pct)}%`;
+        svg.appendChild(label);
+    });
+
+    // Draw cardinal direction lines
+    [0, 45, 90, 135].forEach(deg => {
+        const rad = (deg - 90) * Math.PI / 180;
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', cx + Math.cos(rad) * maxRadius);
+        line.setAttribute('y1', cy + Math.sin(rad) * maxRadius);
+        line.setAttribute('x2', cx - Math.cos(rad) * maxRadius);
+        line.setAttribute('y2', cy - Math.sin(rad) * maxRadius);
+        line.setAttribute('stroke', '#2a2d3e');
+        line.setAttribute('stroke-width', '1');
+        svg.appendChild(line);
+    });
+
+    // Draw wedges
+    const angleStep = (2 * Math.PI) / 16;
+    buckets.forEach((bucket, i) => {
+        if (bucket.count === 0) return;
+
+        const r = maxRadius * (bucket.frequency / maxFreq);
+        const startAngle = (i * angleStep) - (Math.PI / 2) - (angleStep / 2);
+        const endAngle = startAngle + angleStep;
+
+        const x1 = cx + Math.cos(startAngle) * r;
+        const y1 = cy + Math.sin(startAngle) * r;
+        const x2 = cx + Math.cos(endAngle) * r;
+        const y2 = cy + Math.sin(endAngle) * r;
+
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        const d = `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 0 1 ${x2} ${y2} Z`;
+        path.setAttribute('d', d);
+        path.setAttribute('fill', speedColour(bucket.avg_speed));
+        path.setAttribute('fill-opacity', '0.7');
+        path.setAttribute('stroke', speedColour(bucket.avg_speed));
+        path.setAttribute('stroke-width', '0.5');
+
+        // Tooltip
+        path.setAttribute('title', `${bucket.direction}: ${bucket.frequency}% · avg ${bucket.avg_speed} mph`);
+        svg.appendChild(path);
+    });
+
+    // Draw compass labels
+    const compassLabels = ['N','NE','E','SE','S','SW','W','NW'];
+    const compassAngles = [0, 45, 90, 135, 180, 225, 270, 315];
+    const labelRadius = maxRadius + 20;
+
+    compassAngles.forEach((deg, i) => {
+        const rad = (deg - 90) * Math.PI / 180;
+        const x = cx + Math.cos(rad) * labelRadius;
+        const y = cy + Math.sin(rad) * labelRadius;
+
+        const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        label.setAttribute('x', x);
+        label.setAttribute('y', y);
+        label.setAttribute('text-anchor', 'middle');
+        label.setAttribute('dominant-baseline', 'middle');
+        label.setAttribute('fill', deg === 0 ? '#e2e8f0' : '#94a3b8');
+        label.setAttribute('font-size', deg === 0 ? '13' : '11');
+        label.setAttribute('font-weight', deg === 0 ? '600' : '400');
+        label.textContent = compassLabels[i];
+        svg.appendChild(label);
+    });
+
+    // Legend
+    const legendItems = [
+        { colour: '#34d399', label: '< 4 mph' },
+        { colour: '#4f9cf9', label: '4-8 mph' },
+        { colour: '#f59e0b', label: '8-15 mph' },
+        { colour: '#ef4444', label: '> 15 mph' },
+    ];
+    legendItems.forEach((item, i) => {
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', 10);
+        rect.setAttribute('y', 340 + i * 16);
+        rect.setAttribute('width', 10);
+        rect.setAttribute('height', 10);
+        rect.setAttribute('fill', item.colour);
+        rect.setAttribute('fill-opacity', '0.7');
+        svg.appendChild(rect);
+
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', 24);
+        text.setAttribute('y', 349 + i * 16);
+        text.setAttribute('fill', '#94a3b8');
+        text.setAttribute('font-size', '10');
+        text.textContent = item.label;
+        svg.appendChild(text);
+    });
+
+    // Total observations note
+    const note = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    note.setAttribute('x', 390);
+    note.setAttribute('y', 390);
+    note.setAttribute('text-anchor', 'end');
+    note.setAttribute('fill', '#64748b');
+    note.setAttribute('font-size', '9');
+    note.textContent = `${data.total_observations} observations · 24h`;
+    svg.appendChild(note);
+}
+
 // –– Comfort ––––––––––––––––––––––––––––––––––––––––––––––––––
 function populateComfort(d) {
     if (!d || d.error) return;
@@ -661,7 +806,7 @@ function populateRecords(d) {
 
 async function refresh() {
     try {
-        const [current, history, heatwave, rain, records, storm, microclimate, et, mlRain, airCurrent, airHistory, thermalStress, dispersion, uvExposure, pollen, solarEnergy, comfort] = await Promise.all([
+        const [current, history, heatwave, rain, records, storm, microclimate, et, mlRain, airCurrent, airHistory, thermalStress, dispersion, uvExposure, pollen, solarEnergy, comfort, windRose] = await Promise.all([
             fetch('/api/current').then(r => r.json()),
             fetch('/api/history/24h').then(r => r.json()),
             fetch('/api/heatwave').then(r => r.ok ? r.json() : null),
@@ -679,6 +824,7 @@ async function refresh() {
             fetch('/api/pollen').then(r => r.ok ? r.json() : null),
             fetch('/api/solar-energy').then(r => r.ok ? r.json() : null),
             fetch('/api/comfort').then(r => r.ok ? r.json() : null),
+            fetch('/api/wind/rose').then(r => r.ok ? r.json() : null),
         ]);
 
         populateStorm(storm);
@@ -698,6 +844,7 @@ async function refresh() {
         populatePollen(pollen);
         populateSolarEnergy(solarEnergy);
         populateComfort(comfort);
+        buildWindRose(windRose);
 
         set('rain-rate', current.rain.current_rate.toFixed(1));
         set('rain-intensity', current.rain.intensity_description);
