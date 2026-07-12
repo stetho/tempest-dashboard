@@ -264,6 +264,43 @@ def build_current_conditions(obs: dict, pressure_obs: list[dict]) -> dict:
 def index():
     return render_template("index.html", station=STATION_NAME)
 
+@app.route("/api/wind/rose")
+def api_wind_rose():
+    """Return 24h wind observations bucketed into 16 compass points for wind rose."""
+    with get_connection() as conn:
+        rows = conn.execute("""
+            SELECT wind_direction, wind_avg
+            FROM observations
+            WHERE timestamp >= strftime('%s', 'now') - 86400
+              AND wind_avg > 0
+            ORDER BY timestamp ASC
+        """).fetchall()
+    obs = [dict(row) for row in rows]
+
+    # 16 compass points, 22.5° each
+    buckets = {i: {"count": 0, "total_speed": 0.0} for i in range(16)}
+    for o in obs:
+        bucket = int((o["wind_direction"] + 11.25) / 22.5) % 16
+        buckets[bucket]["count"] += 1
+        buckets[bucket]["total_speed"] += o["wind_avg"]
+
+    labels = ["N","NNE","NE","ENE","E","ESE","SE","SSE",
+              "S","SSW","SW","WSW","W","WNW","NW","NNW"]
+
+    result = []
+    total = len(obs)
+    for i in range(16):
+        count = buckets[i]["count"]
+        result.append({
+            "direction": labels[i],
+            "degrees": i * 22.5,
+            "count": count,
+            "frequency": round(count / total * 100, 1) if total > 0 else 0,
+            "avg_speed": round(buckets[i]["total_speed"] / count, 1) if count > 0 else 0.0,
+        })
+
+    return jsonify({"buckets": result, "total_observations": total})
+
 @app.route("/api/comfort")
 def api_comfort():
     obs = get_latest_observation()
