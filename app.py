@@ -25,7 +25,7 @@ from analytics.solar import clear_sky_index, uv_dose_accumulator
 from analytics.temperature import absolute_humidity, frost_risk, thermal_comfort, thermal_stress
 from analytics.rain import rain_intensity, spell_tracker, antecedent_rainfall_index
 from analytics.lightning import lightning_safety
-from analytics.records import get_all_time_records, get_daily_records, get_station_info
+from analytics.records import get_all_time_records, get_daily_records, get_station_info, get_longest_dry_spell
 from analytics.microclimate import fetch_open_meteo, compare_microclimate
 from analytics.evapotranspiration import penman_monteith_et
 from analytics.ml import NaiveBayesRainPredictor, build_training_dataframe, predict_from_observation
@@ -654,6 +654,7 @@ def api_records():
         "all_time": get_all_time_records(db_path),
         "daily": get_daily_records(db_path),
         "station": get_station_info(db_path),
+        "dry_spell": get_longest_dry_spell(db_path),
     })
 
 @app.route("/api/current")

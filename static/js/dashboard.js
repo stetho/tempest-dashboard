@@ -865,6 +865,17 @@ function populateRecords(d) {
     set('rec-coldest-night-date', day.coldest_night.date);
     set('rec-windiest-day', day.windiest_day.value);
     set('rec-windiest-day-date', day.windiest_day.date);
+
+    const dry = d.dry_spell;
+    set('rec-dry-spell', dry.value);
+    set('rec-dry-spell-date', dry.start_date ? `${dry.start_date} to ${dry.end_date}` : '—');
+    set('rec-dry-spell-status',
+        dry.is_ongoing_record
+            ? `Ongoing, started ${dry.current_streak_start}`
+            : dry.current_streak_days > 0
+                ? `Current streak: ${dry.current_streak_days} days`
+                : 'No dry spell in progress'
+    );
 }
 
 // ── Fetch and refresh ──────────────────────────────────────────
