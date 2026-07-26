@@ -33,6 +33,7 @@ from analytics.heatwave import heatwave_status
 from analytics.air_quality import dispersion_index
 from analytics.uv import calculate_uv_dose, fetch_uv_forecast
 from analytics.solar import clear_sky_index, uv_dose_accumulator, solar_energy_potential
+from analytics.drying import washing_forecast, fetch_drying_forecast
 
 
 app = Flask(__name__)
@@ -468,6 +469,8 @@ def api_ha():
 
         pressure_obs = get_pressure_last_3h()
         now = datetime.datetime.now(datetime.UTC)
+        utc_offset = get_utc_offset(obs["timestamp"])
+        local_hour = (now.hour + int(utc_offset)) % 24
 
         # Use build_current_conditions to get everything already calculated
         conditions = build_current_conditions(obs, pressure_obs)
@@ -506,6 +509,169 @@ def api_ha():
         except Exception:
             pass
 
+        # Drying forecast — all three load types, so HA can expose whichever
+        drying_result = None
+        try:
+            hourly = fetch_drying_forecast(LATITUDE, LONGITUDE)
+            drying_result = {
+                load: washing_forecast(hourly, load_type=load)
+                for load in ("light", "medium", "heavy")
+            }
+        except Exception:
+            pass
+
+        # Heatwave status
+        heatwave_result = None
+        try:
+            heatwave_threshold = float(os.getenv("HEATWAVE_THRESHOLD", "28.0"))
+            daily_max = get_daily_max_temperatures(days=30)
+            todays_max = get_todays_max_temperature()
+            heatwave_result = heatwave_status(daily_max, todays_max, heatwave_threshold)
+        except Exception:
+            pass
+
+        # Fog risk — current and tonight
+        fog_result = None
+        try:
+            fog_current = current_fog_risk(
+                air_temperature=obs["air_temperature"],
+                dew_point=obs["dew_point"],
+                relative_humidity=obs["relative_humidity"],
+                wind_avg=obs["wind_avg"],
+                solar_radiation=obs["solar_radiation"],
+                hour=local_hour,
+            )
+            fog_tonight = tonight_fog_forecast(
+                relative_humidity=obs["relative_humidity"],
+                dew_point=obs["dew_point"],
+                air_temperature=obs["air_temperature"],
+                sea_level_pressure=obs["sea_level_pressure"],
+                wind_avg=obs["wind_avg"],
+                solar_radiation=obs["solar_radiation"],
+            )
+            fog_result = {"current": fog_current, "tonight": fog_tonight}
+        except Exception:
+            pass
+
+        # Pollen (fetched once, reused for the comfort score below)
+        pollen_result = None
+        pollen_risk = "low"
+        try:
+            pollen_result = fetch_pollen(LATITUDE, LONGITUDE)
+            pollen_risk = pollen_result.get("overall_risk", "low")
+        except Exception:
+            pass
+
+        # Outdoor comfort score
+        comfort_result = None
+        try:
+            comfort_result = outdoor_comfort_score(
+                air_temperature=obs["air_temperature"],
+                relative_humidity=obs["relative_humidity"],
+                wind_avg=obs["wind_avg"],
+                uv=obs["uv"],
+                pollen_risk=pollen_risk,
+            )
+        except Exception:
+            pass
+
+        # Today's cumulative UV dose / burn time
+        uv_exposure_result = None
+        try:
+            with get_connection() as conn:
+                rows = conn.execute("""
+                    SELECT timestamp, uv
+                    FROM observations
+                    WHERE date(timestamp, 'unixepoch') = date('now')
+                    ORDER BY timestamp ASC
+                """).fetchall()
+            uv_obs = [dict(row) for row in rows]
+            poll_interval = int(os.getenv("POLL_INTERVAL_SECONDS", "600"))
+            uv_exposure_result = calculate_uv_dose(uv_obs, poll_interval)
+        except Exception:
+            pass
+
+        # Air quality dispersion index
+        dispersion_result = None
+        try:
+            dispersion_result = dispersion_index(
+                wind_avg=obs["wind_avg"],
+                delta_t=obs.get("delta_t", 0.0),
+                sea_level_pressure=obs["sea_level_pressure"],
+                precip=obs["precip"],
+            )
+        except Exception:
+            pass
+
+        # Today's solar energy potential
+        solar_energy_result = None
+        try:
+            with get_connection() as conn:
+                rows = conn.execute("""
+                    SELECT solar_radiation
+                    FROM observations
+                    WHERE date(timestamp, 'unixepoch') = date('now')
+                    ORDER BY timestamp ASC
+                """).fetchall()
+            solar_obs = [dict(row) for row in rows]
+            poll_interval = int(os.getenv("POLL_INTERVAL_SECONDS", "600"))
+            solar_energy_result = solar_energy_potential(solar_obs, poll_interval)
+        except Exception:
+            pass
+
+        # Yesterday's reference evapotranspiration (needs a full day, so
+        # skipped gracefully if yesterday has no data)
+        et_result = None
+        try:
+            yesterday = datetime.date.today() - datetime.timedelta(days=1)
+            with get_connection() as conn:
+                rows = conn.execute("""
+                    SELECT
+                        timestamp, air_temperature, relative_humidity,
+                        wind_avg, solar_radiation, sea_level_pressure
+                    FROM observations
+                    WHERE date(timestamp, 'unixepoch') = ?
+                    ORDER BY timestamp ASC
+                """, (yesterday.isoformat(),)).fetchall()
+            et_obs = [dict(row) for row in rows]
+            if et_obs:
+                et_result = penman_monteith_et(et_obs, LATITUDE, yesterday)
+        except Exception:
+            pass
+
+        # Station records
+        records_result = None
+        try:
+            records_result = {
+                "all_time": get_all_time_records(DB_PATH),
+                "daily": get_daily_records(DB_PATH),
+                "station": get_station_info(DB_PATH),
+                "dry_spell": get_longest_dry_spell(DB_PATH),
+            }
+        except Exception:
+            pass
+
+        # 30-day rain summary
+        rain_summary_result = None
+        try:
+            daily_rain = get_daily_totals(days=30)
+            if daily_rain:
+                rain_summary_result = {
+                    "spell": spell_tracker(daily_rain),
+                    "antecedent_rainfall_index": antecedent_rainfall_index(daily_rain),
+                    "daily_totals": daily_rain,
+                }
+        except Exception:
+            pass
+
+        # Air quality — tempest-air Pi sensor, a separate ingestion source
+        # from the main Tempest station, but current-state data HA wants too
+        air_quality_result = None
+        try:
+            air_quality_result = air_db.get_latest()
+        except Exception:
+            pass
+
         timestamp = datetime.datetime.fromtimestamp(obs["timestamp"], datetime.UTC).strftime(
             "%Y-%m-%dT%H:%M:%SZ"
         )
@@ -520,6 +686,8 @@ def api_ha():
             "solar": conditions["solar"],
             "rain": conditions["rain"],
             "lightning": conditions["lightning"],
+            "air_quality": air_quality_result,
+            "pollen": pollen_result,
             "analytics": {
                 "frost_risk": conditions["frost"]["risk_level"],
                 "frost_description": conditions["frost"]["description"],
@@ -535,6 +703,16 @@ def api_ha():
                     "trained_on": ml_result["trained_on"],
                 } if ml_result else None,
                 "microclimate": microclimate_result,
+                "drying": drying_result,
+                "heatwave": heatwave_result,
+                "fog": fog_result,
+                "comfort": comfort_result,
+                "uv_exposure": uv_exposure_result,
+                "dispersion": dispersion_result,
+                "solar_energy": solar_energy_result,
+                "evapotranspiration": et_result,
+                "records": records_result,
+                "rain_summary": rain_summary_result,
             },
         }
 
@@ -619,6 +797,19 @@ def api_storm():
         return jsonify({"error": "Not enough data"}), 404
     result = storm_predictor(obs)
     return jsonify(result)
+
+@app.route("/api/drying-forecast")
+def api_drying_forecast():
+    """Predict whether and when washing hung out now will dry."""
+    load_type = request.args.get("load_type", "medium")
+    try:
+        hourly = fetch_drying_forecast(LATITUDE, LONGITUDE)
+        result = washing_forecast(hourly, load_type=load_type)
+        return jsonify(result)
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/camera/latest")
 def camera_latest():
